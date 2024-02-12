@@ -7,10 +7,9 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        _systems = new Feature("My Features").Add(
-            new RootSystems(Contexts.sharedInstance)
+        _systems = new Feature().Add(
+            new ChefSystems(Contexts.sharedInstance)
         );
-
         _systems.Initialize();
     }
 

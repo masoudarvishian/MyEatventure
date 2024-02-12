@@ -13,13 +13,18 @@ internal class MovingChefSystem : IExecuteSystem
 
     public void Execute()
     {
-        foreach (var e in _contexts.game.GetGroup(GameMatcher.ChefVisual).GetEntities())
+        foreach (var e in _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).AnyOf(GameMatcher.Mover)).GetEntities())
         {
             var entityTransform = e.chefVisual.gameObject.transform;
-            Vector3 targetPosition = new Vector3(7f, 0, 0);
             var step = speed * Time.deltaTime;
-            entityTransform.position = Vector3.MoveTowards(entityTransform.position, targetPosition, step);
+            entityTransform.position = Vector3.MoveTowards(entityTransform.position, e.targetPosition.value, step);
             e.position.value = entityTransform.position;
+
+            if (Vector3.Distance(entityTransform.position, e.targetPosition.value) <= Mathf.Epsilon)
+            {
+                e.isMover = false;
+                e.RemoveTargetPosition();
+            }
         }
     }
 }

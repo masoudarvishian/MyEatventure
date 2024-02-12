@@ -11,21 +11,27 @@ public static class GameComponentsLookup {
     public const int Chef = 0;
     public const int ChefVisual = 1;
     public const int Health = 2;
-    public const int Position = 3;
+    public const int Mover = 3;
+    public const int Position = 4;
+    public const int TargetPosition = 5;
 
-    public const int TotalComponents = 4;
+    public const int TotalComponents = 6;
 
     public static readonly string[] componentNames = {
         "Chef",
         "ChefVisual",
         "Health",
-        "Position"
+        "Mover",
+        "Position",
+        "TargetPosition"
     };
 
     public static readonly System.Type[] componentTypes = {
         typeof(ChefComponent),
         typeof(ChefVisualComponent),
         typeof(HealthComponent),
-        typeof(PositionComponent)
+        typeof(MoverComponent),
+        typeof(PositionComponent),
+        typeof(TargetPositionComponent)
     };
 }

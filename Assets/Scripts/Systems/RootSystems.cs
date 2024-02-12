@@ -6,6 +6,6 @@ public class RootSystems : Feature
     {
         Add(new LogHealthSystem(contexts));
         Add(new CreatePlayerSystem(contexts));
-        Add(new CleanUpHealthSystem(contexts));
+        //Add(new CleanUpHealthSystem(contexts));
     }
 }

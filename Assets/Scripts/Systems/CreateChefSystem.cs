@@ -1,18 +1,24 @@
 ﻿using Entitas;
+using Entitas.Unity;
+using UnityEngine;
 
 public sealed class CreateChefSystem : IInitializeSystem
 {
-    private readonly Contexts contexts;
+    private readonly Contexts _contexts;
+    private readonly GameObject _chefPrefab;
 
-    public CreateChefSystem(Contexts contexts)
+    public CreateChefSystem(Contexts contexts, GameObject chefPrefab)
     {
-        this.contexts = contexts;
+        _contexts = contexts;
+        _chefPrefab = chefPrefab;
     }
 
     public void Initialize()
     {
-        var e = contexts.game.CreateEntity();
+        var e = _contexts.game.CreateEntity();
         e.isChef = true;
-        e.AddPosition(new UnityEngine.Vector3(0, 0, 0));
+        e.AddPosition(new Vector3(0, 0, 0));
+        e.AddChefVisual(_chefPrefab);
+        _chefPrefab.Link(e);
     }
 }

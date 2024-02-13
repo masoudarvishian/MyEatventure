@@ -123,6 +123,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &123813930 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1265298317481067820, guid: b43960631eccd184ab24c698e2a72a22, type: 3}
+  m_PrefabInstance: {fileID: 445624539568899781}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b8502182da8b80418825aa6400dc884, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &649396061
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,6 +506,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _chefPrefab: {fileID: 700190335}
   _cooldownHelper: {fileID: 710456704}
+  _restaurantTargetPositions: {fileID: 123813930}
 --- !u!4 &1070829778
 Transform:
   m_ObjectHideFlags: 0

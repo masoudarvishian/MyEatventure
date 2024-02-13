@@ -2,7 +2,7 @@
 
 public class ChefSystems : Feature
 {
-    public ChefSystems(Contexts contexts, GameObject chefPrefab)
+    public ChefSystems(Contexts contexts, GameObject chefPrefab, CooldownHelper cooldownHelper)
     {
         Add(new CreateChefSystem(contexts, chefPrefab));
         Add(new MovingChefSystem(contexts));
@@ -10,6 +10,6 @@ public class ChefSystems : Feature
         Add(new SetChefAsMoverSystem(contexts));
         Add(new CleanUpTargetPositionSystem(contexts));
         Add(new TakingOrderDetectorSystem(contexts));
-        Add(new CooldownSystem(contexts));
+        Add(new CooldownSystem(contexts, cooldownHelper));
     }
 }

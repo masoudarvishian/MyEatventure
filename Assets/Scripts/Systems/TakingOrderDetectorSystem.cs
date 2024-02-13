@@ -20,6 +20,14 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
         {
             foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
             {
+                if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon &&
+                    waitingCustomerEntity.isPreparingOrder)
+                {
+                    var cooldownEntity = _contexts.game.CreateEntity();
+                    cooldownEntity.AddCooldown(0.1f);
+                    continue;
+                }
+
                 if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon)
                 {
                     var cooldownEntity = _contexts.game.CreateEntity();

@@ -15,10 +15,10 @@ public sealed class CreateChefSystem : IInitializeSystem
 
     public void Initialize()
     {
-        var e = _contexts.game.CreateEntity();
-        e.isChef = true;
-        e.AddPosition(new Vector3(0, 0, 0));
-        e.AddChefVisual(_chefPrefab);
-        _chefPrefab.Link(e);
+        var entity = _contexts.game.CreateEntity();
+        entity.isChef = true;
+        entity.AddPosition(new Vector3(0, 0, 0));
+        entity.AddChefVisual(_chefPrefab);
+        _chefPrefab.Link(entity);
     }
 }

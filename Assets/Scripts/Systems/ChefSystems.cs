@@ -7,7 +7,7 @@ public class ChefSystems : Feature
         Add(new CreateChefSystem(contexts, chefPrefab));
         Add(new MovingChefSystem(contexts));
         Add(new TargetPositionEmitterSystem(contexts));
-        Add(new TargetPositionReacterSystem(contexts));
+        Add(new SetChefAsMoverSystem(contexts));
         Add(new CleanUpTargetPositionSystem(contexts));
     }
 }

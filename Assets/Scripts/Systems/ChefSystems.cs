@@ -12,5 +12,6 @@ public class ChefSystems : Feature
         Add(new TakingOrderDetectorSystem(contexts));
         Add(new CooldownSystem(contexts, cooldownHelper));
         Add(new PreparingOrderDetectorSystem(contexts, restaurantTargetPositions));
+        Add(new StartCookingSystem(contexts, restaurantTargetPositions));
     }
 }

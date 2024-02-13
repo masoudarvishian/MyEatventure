@@ -21,6 +21,8 @@ public sealed class CooldownSystem : ReactiveSystem<GameEntity>, ICleanupSystem
     {
         if (!_timeIsUp) return;
 
+        _timeIsUp = false;
+
         foreach (var entity in _contexts.game.GetGroup(GameMatcher.Cooldown).GetEntities())
             entity.Destroy();
     }

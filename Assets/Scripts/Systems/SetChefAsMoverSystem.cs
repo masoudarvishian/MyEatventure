@@ -15,10 +15,7 @@ public sealed class SetChefAsMoverSystem : ReactiveSystem<GameEntity>
     {
         Debug.Log("SetChefAsMoverSystem");
         foreach (var entity in entities)
-        {
-            Debug.Log(entity);
             AddMovingComponentsForMovers(entity.targetPosition.value);
-        }
     }
 
     protected override bool Filter(GameEntity entity) => entity.hasTargetPosition && !entity.isChef;

@@ -15,14 +15,19 @@ public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
-        Debug.Log("PreparingOrderDetectorSystem");
-        var e = _contexts.game.CreateEntity();
-        e.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
+        foreach(var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
+        {
+            if (Vector3.Distance(chefEntity.position.value, _restaurantTargetPositions.GetFirstKitchenSpot().position) > Mathf.Epsilon)
+            {
+                var e = _contexts.game.CreateEntity();
+                e.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
+            }
+        }
     }
 
     protected override bool Filter(GameEntity entity)
     {
-        return true;
+        return entity.isEnabled == false;
     }
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context)

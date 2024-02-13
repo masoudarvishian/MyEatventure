@@ -3,17 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public sealed class CooldownSystem : ReactiveSystem<GameEntity>
+public sealed class CooldownSystem : ReactiveSystem<GameEntity>, ICleanupSystem
 {
     private readonly Contexts _contexts;
     private readonly CooldownHelper _cooldownHelper;
     private float duration;
+    private bool _timeIsUp;
 
     public CooldownSystem(Contexts contexts, CooldownHelper cooldownHelper) : base(contexts.game)
     {
         _contexts = contexts;
         _cooldownHelper = cooldownHelper;
         _cooldownHelper.onTimerIsUp += onCooldownTimerIsUp;
+    }
+
+    public void Cleanup()
+    {
+        if (!_timeIsUp) return;
+
+        foreach (var entity in _contexts.game.GetGroup(GameMatcher.Cooldown).GetEntities())
+            entity.Destroy();
     }
 
     protected override void Execute(List<GameEntity> entities)
@@ -36,6 +45,7 @@ public sealed class CooldownSystem : ReactiveSystem<GameEntity>
 
     private void onCooldownTimerIsUp(object sender, System.EventArgs e)
     {
+        _timeIsUp = true;
         Debug.Log("_cooldownHelper_onTimerIsUp");
     }
 }

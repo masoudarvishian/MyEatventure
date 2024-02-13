@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
+public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 {
-    private readonly Contexts _contexts;
     private IGroup<GameEntity> _waitingCustomersGroup;
 
-    public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
+    public DeliveryOrderSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.WaitingCustomer).NoneOf(GameMatcher.PreparingOrder));
-        _contexts = contexts;
+        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.WaitingCustomer).AnyOf(GameMatcher.PreparingOrder));
     }
 
     protected override void Execute(List<GameEntity> entities)
@@ -21,9 +19,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
             {
                 if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon)
                 {
-                    var cooldownEntity = _contexts.game.CreateEntity();
-                    cooldownEntity.AddCooldown(2f);
-                    waitingCustomerEntity.isPreparingOrder = true;
+                    waitingCustomerEntity.ReplaceDelivered(true);
                 }
             }
         }

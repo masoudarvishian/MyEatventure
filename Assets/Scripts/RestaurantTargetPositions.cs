@@ -13,5 +13,7 @@ public class RestaurantTargetPositions : MonoBehaviour
     {
         var entity = Contexts.sharedInstance.game.CreateEntity();
         entity.AddWaitingCustomer(GetFirstCustomerSpot().position);
+        entity.isPreparingOrder = false;
+        entity.AddDelivered(false);
     }
 }

@@ -2,25 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
+public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
+    private readonly IGroup<GameEntity> _waitingCustomerGroup;
 
-    public PreparingOrderDetectorSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
+    public ReadyOrderDetectorSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
+        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.WaitingCustomer);
     }
 
     protected override void Execute(List<GameEntity> entities)
     {
         foreach (var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
         {
-            if (Vector3.Distance(chefEntity.position.value, _restaurantTargetPositions.GetFirstKitchenSpot().position) > Mathf.Epsilon)
+            if (Vector3.Distance(chefEntity.position.value, _restaurantTargetPositions.GetFirstKitchenSpot().position) <= Mathf.Epsilon)
             {
+                var waitingCustomerEntity = _waitingCustomerGroup.GetEntities()[0];
                 var e = _contexts.game.CreateEntity();
-                e.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
+                e.AddTargetPosition(waitingCustomerEntity.waitingCustomer.position);
             }
         }
     }

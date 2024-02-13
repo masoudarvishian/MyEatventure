@@ -9,9 +9,11 @@ public class ChefSystems : Feature
         Add(new TargetPositionEmitterSystem(contexts));
         Add(new SetChefAsMoverSystem(contexts));
         //Add(new CleanUpTargetPositionSystem(contexts));
+        Add(new DeliveryOrderSystem(contexts));
         Add(new TakingOrderDetectorSystem(contexts));
         Add(new CooldownSystem(contexts, cooldownHelper));
         Add(new PreparingOrderDetectorSystem(contexts, restaurantTargetPositions));
         Add(new StartCookingSystem(contexts, restaurantTargetPositions));
+        Add(new ReadyOrderDetectorSystem(contexts, restaurantTargetPositions));
     }
 }

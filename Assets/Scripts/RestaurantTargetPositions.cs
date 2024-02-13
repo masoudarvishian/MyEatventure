@@ -15,5 +15,6 @@ public class RestaurantTargetPositions : MonoBehaviour
         entity.AddWaitingCustomer(GetFirstCustomerSpot().position);
         entity.isPreparingOrder = false;
         entity.AddDelivered(false);
+        entity.AddQuantity(2);
     }
 }

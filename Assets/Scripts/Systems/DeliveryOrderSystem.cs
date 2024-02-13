@@ -19,7 +19,11 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
             {
                 if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon)
                 {
-                    waitingCustomerEntity.ReplaceDelivered(true);
+                    if (waitingCustomerEntity.quantity.value > 0)
+                        waitingCustomerEntity.quantity.value--;
+
+                    if (waitingCustomerEntity.quantity.value == 0)
+                        waitingCustomerEntity.ReplaceDelivered(true);
                 }
             }
         }

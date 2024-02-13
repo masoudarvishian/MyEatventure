@@ -1,5 +1,6 @@
 ﻿using Entitas;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
@@ -9,7 +10,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.WaitingCustomer).NoneOf(GameMatcher.PreparingOrder));
+        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.WaitingCustomer));
         _contexts = contexts;
     }
 
@@ -17,7 +18,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
     {
         foreach (var entity in entities)
         {
-            foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities())
+            foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
             {
                 if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon)
                 {

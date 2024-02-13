@@ -7,7 +7,7 @@ public class RestaurantTargetPositions : MonoBehaviour
 
     public Transform GetFirstCustomerSpot() => customerSpots[0];
 
-    public Transform GetFirstRestaurantSpot() => kitchenSpots[0];
+    public Transform GetFirstKitchenSpot() => kitchenSpots[0];
 
     private void Start()
     {

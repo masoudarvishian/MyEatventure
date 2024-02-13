@@ -13,14 +13,18 @@ public sealed class SetChefAsMoverSystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
+        Debug.Log("SetChefAsMoverSystem");
         foreach (var entity in entities)
+        {
+            Debug.Log(entity);
             AddMovingComponentsForMovers(entity.targetPosition.value);
+        }
     }
 
-    protected override bool Filter(GameEntity entity) => entity.hasTargetPosition;
+    protected override bool Filter(GameEntity entity) => entity.hasTargetPosition && !entity.isChef;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.TargetPosition);
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).Added());
 
     private void AddMovingComponentsForMovers(Vector3 targetPosition)
     {

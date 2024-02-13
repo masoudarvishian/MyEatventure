@@ -16,10 +16,11 @@ public sealed class TargetPositionEmitterSystem : IExecuteSystem
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            foreach(var waitingCustomerEntity in _waitingCustomerGroup.GetEntities())
+            foreach (var waitingCustomerEntity in _waitingCustomerGroup.GetEntities())
             {
                 var e = _contexts.game.CreateEntity();
                 e.AddTargetPosition(waitingCustomerEntity.waitingCustomer.position);
+                return;
             }
         }
     }

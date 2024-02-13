@@ -1,5 +1,6 @@
 ﻿using Entitas;
 using System.Collections.Generic;
+using UnityEngine;
 
 public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
 {
@@ -14,8 +15,9 @@ public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
+        Debug.Log("PreparingOrderDetectorSystem");
         var e = _contexts.game.CreateEntity();
-        e.AddTargetPosition(_restaurantTargetPositions.GetFirstRestaurantSpot().position);
+        e.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
     }
 
     protected override bool Filter(GameEntity entity)

@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.Timeline.TimelinePlaybackControls;
 
 public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 {
-    private IGroup<GameEntity> _waitingCustomersGroup;
+    private IGroup<GameEntity> _customersGroup;
+    private readonly Contexts _contexts;
 
     public DeliveryOrderSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Customer).AnyOf(GameMatcher.PreparingOrder));
+        _contexts = contexts;
+        _customersGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Customer).AnyOf(GameMatcher.PreparingOrder));
     }
 
     protected override void Execute(List<GameEntity> entities)
@@ -25,7 +28,7 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 
     private void ReduceQuantityIfHasDeliveredOrder(GameEntity chefEntity)
     {
-        var chefCustomers = _waitingCustomersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value);
+        var chefCustomers = _customersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value);
         foreach (var customerEntity in chefCustomers)
         {
             if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
@@ -45,11 +48,13 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
             customerEntity.quantity.value--;
     }
 
-    private static void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)
+    private void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)
     {
         if (customerEntity.quantity.value != 0)
             return;
 
+        var frontDeskEntity = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot).GetEntities().First(x => x.index.value == customerEntity.targetDeskIndex.value);
+        frontDeskEntity.isOccupied = false;
         customerEntity.ReplaceDelivered(true);
         chefEntity.RemoveCustomerIndex();
     }

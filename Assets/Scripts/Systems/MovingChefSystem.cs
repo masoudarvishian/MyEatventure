@@ -6,7 +6,7 @@ internal class MovingChefSystem : IExecuteSystem
 {
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _moverChefGroup;
-    private float _speed = 2.0f;
+    private float _speed = 3.0f;
 
     public MovingChefSystem(Contexts contexts)
     {

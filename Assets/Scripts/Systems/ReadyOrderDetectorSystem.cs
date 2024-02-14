@@ -23,7 +23,7 @@ public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
             if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
             {
                 var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
-                AddTargetPositionEntity(chefCustomerEntity.position.value);
+                AddTargetPositionEntity(chefCustomerEntity.targetDeskPosition.value);
             }
         }
     }

@@ -48,6 +48,6 @@ public sealed class CooldownSystem : ReactiveSystem<GameEntity>, ICleanupSystem
     private void onCooldownTimerIsUp(object sender, System.EventArgs e)
     {
         _timeIsUp = true;
-        Debug.Log("_cooldownHelper_onTimerIsUp");
+        Debug.Log("time is up");
     }
 }

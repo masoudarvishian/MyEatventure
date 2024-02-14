@@ -22,18 +22,18 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     private void TryToAddCooldownIfChefHasReachedToCustomer(GameEntity chefEntity)
     {
-        foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
+        foreach (var customerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
         {
-            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.position.value) && waitingCustomerEntity.isPreparingOrder)
+            if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value) && customerEntity.isPreparingOrder)
             {
                 AddCooldownEntity(0.1f);
                 continue;
             }
 
-            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.position.value))
+            if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
             {
                 AddCooldownEntity(2f);
-                waitingCustomerEntity.isPreparingOrder = true;
+                customerEntity.isPreparingOrder = true;
             }
         }
     }

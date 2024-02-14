@@ -26,12 +26,12 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
     private void ReduceQuantityIfHasDeliveredOrder(GameEntity chefEntity)
     {
         var chefCustomers = _waitingCustomersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value);
-        foreach (var waitingCustomerEntity in chefCustomers)
+        foreach (var customerEntity in chefCustomers)
         {
-            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.position.value))
+            if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
             {
-                RecudeQuantity(waitingCustomerEntity);
-                HandleDeliveryComponents(chefEntity, waitingCustomerEntity);
+                RecudeQuantity(customerEntity);
+                HandleDeliveryComponents(chefEntity, customerEntity);
             }
         }
     }
@@ -39,18 +39,18 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
     private static bool HasReachedToTargetPosition(GameEntity chefEntity, Vector3 targetPosition) =>
         Vector3.Distance(chefEntity.position.value, targetPosition) <= Mathf.Epsilon;
 
-    private static void RecudeQuantity(GameEntity waitingCustomerEntity)
+    private static void RecudeQuantity(GameEntity customerEntity)
     {
-        if (waitingCustomerEntity.quantity.value > 0)
-            waitingCustomerEntity.quantity.value--;
+        if (customerEntity.quantity.value > 0)
+            customerEntity.quantity.value--;
     }
 
-    private static void HandleDeliveryComponents(GameEntity chefEntity, GameEntity waitingCustomerEntity)
+    private static void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)
     {
-        if (waitingCustomerEntity.quantity.value != 0)
+        if (customerEntity.quantity.value != 0)
             return;
 
-        waitingCustomerEntity.ReplaceDelivered(true);
+        customerEntity.ReplaceDelivered(true);
         chefEntity.RemoveCustomerIndex();
     }
 }

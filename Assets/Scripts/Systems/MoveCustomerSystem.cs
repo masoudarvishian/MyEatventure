@@ -1,17 +1,18 @@
 ﻿using Entitas;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public sealed class SetCustomerAsMoverSystem : IExecuteSystem
+public sealed class MoveCustomerSystem : IExecuteSystem
 {
     private IGroup<GameEntity> _customerGroup;
     private readonly IGroup<GameEntity> _frontDeskGroup;
-    private float _speed = 2f;
+    private float _speed = 3.0f;
     private readonly Contexts _contexts;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
     private bool _once = false;
 
-    public SetCustomerAsMoverSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions)
+    public MoveCustomerSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions)
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
@@ -24,7 +25,9 @@ public sealed class SetCustomerAsMoverSystem : IExecuteSystem
         foreach (var entity in _customerGroup.GetEntities().Where(x => x.isCustomer))
         {
             var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
+            
             MoveEntity(entity, emptyFrontDeskEntity.position.value);
+
             if (!_once && Vector3.Distance(entity.position.value, emptyFrontDeskEntity.position.value) <= Mathf.Epsilon)
             {
                 var freeChefEntity = _contexts.game.GetGroup(GameMatcher.Chef).GetEntities().Where(x => !x.hasCustomerIndex).First();
@@ -32,6 +35,8 @@ public sealed class SetCustomerAsMoverSystem : IExecuteSystem
 
                 var behindDeskTargetPos = _restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
                 freeChefEntity.AddTargetPosition(behindDeskTargetPos);
+                entity.AddTargetDeskPosition(behindDeskTargetPos);
+                
                 _once = true;
             }
         }

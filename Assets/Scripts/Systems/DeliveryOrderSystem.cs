@@ -9,7 +9,7 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 
     public DeliveryOrderSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.WaitingCustomer).AnyOf(GameMatcher.PreparingOrder));
+        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Customer).AnyOf(GameMatcher.PreparingOrder));
     }
 
     protected override void Execute(List<GameEntity> entities)
@@ -28,7 +28,7 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
         var chefCustomers = _waitingCustomersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value);
         foreach (var waitingCustomerEntity in chefCustomers)
         {
-            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.waitingCustomer.position))
+            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.position.value))
             {
                 RecudeQuantity(waitingCustomerEntity);
                 HandleDeliveryComponents(chefEntity, waitingCustomerEntity);

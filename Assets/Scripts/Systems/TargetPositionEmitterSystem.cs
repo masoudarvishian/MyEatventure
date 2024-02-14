@@ -12,7 +12,7 @@ public sealed class TargetPositionEmitterSystem : IExecuteSystem
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
-        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.WaitingCustomer);
+        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
     }
 
     public void Execute()
@@ -20,7 +20,8 @@ public sealed class TargetPositionEmitterSystem : IExecuteSystem
         if (Input.GetKeyDown(KeyCode.Space))
         {
             var entity = Contexts.sharedInstance.game.CreateEntity();
-            entity.AddWaitingCustomer(_restaurantTargetPositions.GetFirstCustomerSpot().position);
+            entity.isCustomer = true;
+            entity.AddPosition(_restaurantTargetPositions.GetFirstCustomerSpot().position);
             entity.isPreparingOrder = false;
             entity.AddDelivered(false);
             entity.AddQuantity(2);

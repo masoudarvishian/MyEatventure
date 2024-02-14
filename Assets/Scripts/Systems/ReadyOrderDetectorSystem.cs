@@ -13,7 +13,7 @@ public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
-        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.WaitingCustomer);
+        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
     }
 
     protected override void Execute(List<GameEntity> entities)
@@ -23,7 +23,7 @@ public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
             if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
             {
                 var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
-                AddTargetPositionEntity(chefCustomerEntity.waitingCustomer.position);
+                AddTargetPositionEntity(chefCustomerEntity.position.value);
             }
         }
     }

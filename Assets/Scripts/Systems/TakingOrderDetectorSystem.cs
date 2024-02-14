@@ -10,7 +10,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.WaitingCustomer);
+        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.Customer);
         _contexts = contexts;
     }
 
@@ -24,13 +24,13 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
     {
         foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
         {
-            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.waitingCustomer.position) && waitingCustomerEntity.isPreparingOrder)
+            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.position.value) && waitingCustomerEntity.isPreparingOrder)
             {
                 AddCooldownEntity(0.1f);
                 continue;
             }
 
-            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.waitingCustomer.position))
+            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.position.value))
             {
                 AddCooldownEntity(2f);
                 waitingCustomerEntity.isPreparingOrder = true;

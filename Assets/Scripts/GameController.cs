@@ -7,12 +7,17 @@ public class GameController : MonoBehaviour
     [SerializeField] private CooldownHelper _cooldownHelper;
     [SerializeField] private RestaurantTargetPositions _restaurantTargetPositions;
 
+    [SerializeField] private GameObject _customersPrefab;
+    [SerializeField] private GameObject _customersParent;
+    [SerializeField] private Transform _customerSpawnPoint;
+
     private Systems _systems;
 
     private void Start()
     {
         _systems = new Feature().Add(
-            new ChefSystems(Contexts.sharedInstance, _chefPrefab, _cooldownHelper, _restaurantTargetPositions)
+            new ChefSystems(Contexts.sharedInstance, _chefPrefab, _cooldownHelper, _restaurantTargetPositions,
+            _customersPrefab, _customersParent, _customerSpawnPoint)
         );
         _systems.Initialize();
     }

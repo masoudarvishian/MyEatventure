@@ -19,17 +19,17 @@ public sealed class TargetPositionEmitterSystem : IExecuteSystem
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            var entity = Contexts.sharedInstance.game.CreateEntity();
+            var entity = _contexts.game.CreateEntity();
             entity.isCustomer = true;
             entity.AddPosition(_restaurantTargetPositions.GetFirstCustomerSpot().position);
             entity.isPreparingOrder = false;
             entity.AddDelivered(false);
             entity.AddQuantity(2);
+
             var freeChefEntity = _contexts.game.GetGroup(GameMatcher.Chef).GetEntities().Where(x => !x.hasCustomerIndex).First();
             freeChefEntity.AddCustomerIndex(entity.creationIndex);
 
-            var e = _contexts.game.CreateEntity();
-            e.AddTargetPosition(_restaurantTargetPositions.GetFirstCustomerSpot().position);
+            freeChefEntity.AddTargetPosition(_restaurantTargetPositions.GetFirstCustomerSpot().position);
         }
     }
 }

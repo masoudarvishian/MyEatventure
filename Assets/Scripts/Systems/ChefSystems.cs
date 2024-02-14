@@ -9,7 +9,7 @@ public class ChefSystems : Feature
         Add(new CreateChefSystem(contexts, chefPrefab));
         Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint));
         Add(new MovingChefSystem(contexts));
-        Add(new TargetPositionEmitterSystem(contexts, restaurantTargetPositions));
+        //Add(new TargetPositionEmitterSystem(contexts, restaurantTargetPositions));
         Add(new SetChefAsMoverSystem(contexts));
         //Add(new CleanUpTargetPositionSystem(contexts));
         Add(new DeliveryOrderSystem(contexts));
@@ -18,5 +18,6 @@ public class ChefSystems : Feature
         Add(new PreparingOrderDetectorSystem(contexts, restaurantTargetPositions));
         Add(new StartCookingSystem(contexts, restaurantTargetPositions));
         Add(new ReadyOrderDetectorSystem(contexts, restaurantTargetPositions));
+        Add(new SetCustomerAsMoverSystem(contexts, restaurantTargetPositions));
     }
 }

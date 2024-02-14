@@ -8,25 +8,25 @@
 //------------------------------------------------------------------------------
 public partial class GameEntity {
 
-    public ChefVisualComponent chefVisual { get { return (ChefVisualComponent)GetComponent(GameComponentsLookup.ChefVisual); } }
-    public bool hasChefVisual { get { return HasComponent(GameComponentsLookup.ChefVisual); } }
+    public VisualComponent visual { get { return (VisualComponent)GetComponent(GameComponentsLookup.Visual); } }
+    public bool hasVisual { get { return HasComponent(GameComponentsLookup.Visual); } }
 
-    public void AddChefVisual(UnityEngine.GameObject newGameObject) {
-        var index = GameComponentsLookup.ChefVisual;
-        var component = (ChefVisualComponent)CreateComponent(index, typeof(ChefVisualComponent));
+    public void AddVisual(UnityEngine.GameObject newGameObject) {
+        var index = GameComponentsLookup.Visual;
+        var component = (VisualComponent)CreateComponent(index, typeof(VisualComponent));
         component.gameObject = newGameObject;
         AddComponent(index, component);
     }
 
-    public void ReplaceChefVisual(UnityEngine.GameObject newGameObject) {
-        var index = GameComponentsLookup.ChefVisual;
-        var component = (ChefVisualComponent)CreateComponent(index, typeof(ChefVisualComponent));
+    public void ReplaceVisual(UnityEngine.GameObject newGameObject) {
+        var index = GameComponentsLookup.Visual;
+        var component = (VisualComponent)CreateComponent(index, typeof(VisualComponent));
         component.gameObject = newGameObject;
         ReplaceComponent(index, component);
     }
 
-    public void RemoveChefVisual() {
-        RemoveComponent(GameComponentsLookup.ChefVisual);
+    public void RemoveVisual() {
+        RemoveComponent(GameComponentsLookup.Visual);
     }
 }
 
@@ -40,17 +40,17 @@ public partial class GameEntity {
 //------------------------------------------------------------------------------
 public sealed partial class GameMatcher {
 
-    static Entitas.IMatcher<GameEntity> _matcherChefVisual;
+    static Entitas.IMatcher<GameEntity> _matcherVisual;
 
-    public static Entitas.IMatcher<GameEntity> ChefVisual {
+    public static Entitas.IMatcher<GameEntity> Visual {
         get {
-            if (_matcherChefVisual == null) {
-                var matcher = (Entitas.Matcher<GameEntity>)Entitas.Matcher<GameEntity>.AllOf(GameComponentsLookup.ChefVisual);
+            if (_matcherVisual == null) {
+                var matcher = (Entitas.Matcher<GameEntity>)Entitas.Matcher<GameEntity>.AllOf(GameComponentsLookup.Visual);
                 matcher.componentNames = GameComponentsLookup.componentNames;
-                _matcherChefVisual = matcher;
+                _matcherVisual = matcher;
             }
 
-            return _matcherChefVisual;
+            return _matcherVisual;
         }
     }
 }

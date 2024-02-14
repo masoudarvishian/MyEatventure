@@ -1,5 +1,8 @@
 ﻿using Entitas;
+using Entitas.Unity;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public sealed class CreateCustomerSystem : IExecuteSystem
 {
@@ -20,9 +23,30 @@ public sealed class CreateCustomerSystem : IExecuteSystem
     {
         if (Input.GetKeyDown(KeyCode.C))
         {
-            var customerObj = GameObject.Instantiate(_customerPrefab);
-            customerObj.transform.SetParent(_customersParent.transform);
-            customerObj.transform.position = _customerSpawnPoint.position;
+            GameObject customerObj = InstantiateCustomerPrefab();
+            GameEntity customerEntity = CreateCustomerEntity(customerObj);
+
+            customerObj.Link(customerEntity);
         }
+    }
+
+    private GameObject InstantiateCustomerPrefab()
+    {
+        var customerObj = GameObject.Instantiate(_customerPrefab);
+        customerObj.transform.SetParent(_customersParent.transform);
+        customerObj.transform.position = _customerSpawnPoint.position;
+        return customerObj;
+    }
+
+    private GameEntity CreateCustomerEntity(GameObject customerObj)
+    {
+        var entity = _contexts.game.CreateEntity();
+        entity.isCustomer = true;
+        entity.AddPosition(customerObj.transform.position);
+        entity.isPreparingOrder = false;
+        entity.AddDelivered(false);
+        entity.AddQuantity(2);
+        entity.AddVisual(customerObj);
+        return entity;
     }
 }

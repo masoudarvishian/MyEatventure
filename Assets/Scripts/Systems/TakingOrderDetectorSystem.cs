@@ -47,8 +47,8 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
     private static bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
 
-    protected override bool Filter(GameEntity entity) => !entity.isMover && entity.isChef;
+    protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).AnyOf(GameMatcher.Chef).Removed());
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
 }

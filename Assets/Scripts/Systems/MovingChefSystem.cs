@@ -1,4 +1,5 @@
 ﻿using Entitas;
+using System.Linq;
 using UnityEngine;
 
 internal class MovingChefSystem : IExecuteSystem
@@ -10,39 +11,33 @@ internal class MovingChefSystem : IExecuteSystem
     public MovingChefSystem(Contexts contexts)
     {
         _contexts = contexts;
-        _moverChefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).AnyOf(GameMatcher.Mover));
+        _moverChefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef));
     }
 
     public void Execute()
     {
-        foreach (var entity in _moverChefGroup.GetEntities())
+        foreach (var entity in _moverChefGroup.GetEntities().Where(x => x.hasTargetPosition))
         {
             MoveEntity(entity);
-            CheckIfHaveToStopMoving(entity);
+            if (HasReachedToTargetPosition(entity.position.value, entity.targetPosition.value))
+                RemoveMovingComponents(entity);
         }
     }
 
     private void MoveEntity(GameEntity entity)
     {
-        var entityTransform = entity.chefVisual.gameObject.transform;
+        var entityTransform = entity.visual.gameObject.transform;
         entityTransform.position = Vector3.MoveTowards(entityTransform.position, entity.targetPosition.value, GetStep());
         entity.position.value = entityTransform.position;
     }
 
     private float GetStep() => _speed * Time.deltaTime;
 
-    private static void CheckIfHaveToStopMoving(GameEntity entity)
-    {
-        if (HasReachedToTargetPosition(entity.position.value, entity.targetPosition.value))
-            RemoveMovingComponents(entity);
-    }
-
     private static bool HasReachedToTargetPosition(Vector3 entityPosition, Vector3 targetPosition) =>
         Vector3.Distance(entityPosition, targetPosition) <= Mathf.Epsilon;
 
     private static void RemoveMovingComponents(GameEntity entity)
     {
-        entity.isMover = false;
         entity.RemoveTargetPosition();
     }
 }

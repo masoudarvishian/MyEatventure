@@ -18,10 +18,10 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
             ReduceQuantityIfHasDeliveredOrder(chefEntity);
     }
 
-    protected override bool Filter(GameEntity entity) => !entity.isMover && entity.isChef;
+    protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).AnyOf(GameMatcher.Chef).Removed());
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
 
     private void ReduceQuantityIfHasDeliveredOrder(GameEntity chefEntity)
     {

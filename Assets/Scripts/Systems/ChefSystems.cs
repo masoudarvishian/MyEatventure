@@ -7,7 +7,7 @@ public class ChefSystems : Feature
     {
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));
         Add(new CreateChefSystem(contexts, chefPrefab));
-        Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint));
+        Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint, restaurantTargetPositions));
         Add(new MovingChefSystem(contexts));
         //Add(new TargetPositionEmitterSystem(contexts, restaurantTargetPositions));
         Add(new SetChefAsMoverSystem(contexts));

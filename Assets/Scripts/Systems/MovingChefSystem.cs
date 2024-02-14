@@ -5,22 +5,22 @@ using UnityEngine;
 internal class MovingChefSystem : IExecuteSystem
 {
     private readonly Contexts _contexts;
-    private readonly IGroup<GameEntity> _moverChefGroup;
+    private readonly IGroup<GameEntity> _chefGroup;
     private float _speed = 3.0f;
 
     public MovingChefSystem(Contexts contexts)
     {
         _contexts = contexts;
-        _moverChefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef));
+        _chefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef));
     }
 
     public void Execute()
     {
-        foreach (var entity in _moverChefGroup.GetEntities().Where(x => x.hasTargetPosition))
+        foreach (var entity in _chefGroup.GetEntities().Where(x => x.hasTargetPosition))
         {
             MoveEntity(entity);
             if (HasReachedToTargetPosition(entity.position.value, entity.targetPosition.value))
-                RemoveMovingComponents(entity);
+                entity.RemoveTargetPosition();
         }
     }
 
@@ -35,9 +35,4 @@ internal class MovingChefSystem : IExecuteSystem
 
     private static bool HasReachedToTargetPosition(Vector3 entityPosition, Vector3 targetPosition) =>
         Vector3.Distance(entityPosition, targetPosition) <= Mathf.Epsilon;
-
-    private static void RemoveMovingComponents(GameEntity entity)
-    {
-        entity.RemoveTargetPosition();
-    }
 }

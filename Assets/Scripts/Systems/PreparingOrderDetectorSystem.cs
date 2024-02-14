@@ -18,7 +18,7 @@ public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
         foreach (var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
         {
             if (HasNotReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
-                AddTargetPositionEntity(_restaurantTargetPositions.GetFirstKitchenSpot().position);
+                chefEntity.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
         }
     }
 
@@ -29,10 +29,4 @@ public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     private bool HasNotReachedToTargetPosition(GameEntity chefEntity, Vector3 targetPosition) =>
         Vector3.Distance(chefEntity.position.value, targetPosition) > Mathf.Epsilon;
-
-    private void AddTargetPositionEntity(Vector3 value)
-    {
-        var e = _contexts.game.CreateEntity();
-        e.AddTargetPosition(value);
-    }
 }

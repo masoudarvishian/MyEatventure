@@ -2,7 +2,6 @@
 using Entitas.Unity;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 
 public sealed class CreateCustomerSystem : IExecuteSystem
 {
@@ -10,13 +9,18 @@ public sealed class CreateCustomerSystem : IExecuteSystem
     private readonly GameObject _customerPrefab;
     private readonly GameObject _customersParent;
     private readonly Transform _customerSpawnPoint;
+    private readonly RestaurantTargetPositions _restaurantTargetPositions;
+    private readonly IGroup<GameEntity> _frontDeskGroup;
 
-    public CreateCustomerSystem(Contexts contexts, GameObject customerPrefab, GameObject customersParent, Transform customerSpawnPoint)
+    public CreateCustomerSystem(Contexts contexts, GameObject customerPrefab, GameObject customersParent, Transform customerSpawnPoint,
+        RestaurantTargetPositions restaurantTargetPositions)
     {
         _contexts = contexts;
         _customerPrefab = customerPrefab;
         _customersParent = customersParent;
         _customerSpawnPoint = customerSpawnPoint;
+        _restaurantTargetPositions = restaurantTargetPositions;
+        _frontDeskGroup = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot);
     }
 
     public void Execute()
@@ -25,6 +29,18 @@ public sealed class CreateCustomerSystem : IExecuteSystem
         {
             GameObject customerObj = InstantiateCustomerPrefab();
             GameEntity customerEntity = CreateCustomerEntity(customerObj);
+
+
+
+            //var freeChefEntity = _contexts.game.GetGroup(GameMatcher.Chef).GetEntities().Where(x => !x.hasCustomerIndex).First();
+
+            var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
+            var behindDeskTargetPos = _restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
+            
+            customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
+            customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
+            customerEntity.AddTargetDeskIndex(emptyFrontDeskEntity.index.value);
+
 
             customerObj.Link(customerEntity);
         }

@@ -1,5 +1,6 @@
 ﻿using Entitas;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public sealed class SetChefAsMoverSystem : ReactiveSystem<GameEntity>
@@ -13,7 +14,7 @@ public sealed class SetChefAsMoverSystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
-        foreach (var entity in entities)
+        foreach (var entity in entities.Where(x => x.isChef && !x.hasTargetPosition))
         {
             AddMovingComponentsForChefs(entity.targetPosition.value);
         }

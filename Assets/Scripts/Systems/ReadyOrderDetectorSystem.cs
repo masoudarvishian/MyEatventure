@@ -1,5 +1,6 @@
 ﻿using Entitas;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
@@ -19,22 +20,25 @@ public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
     {
         foreach (var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
         {
-            if (Vector3.Distance(chefEntity.position.value, _restaurantTargetPositions.GetFirstKitchenSpot().position) <= Mathf.Epsilon)
+            if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
             {
-                var waitingCustomerEntity = _waitingCustomerGroup.GetEntities()[0];
-                var e = _contexts.game.CreateEntity();
-                e.AddTargetPosition(waitingCustomerEntity.waitingCustomer.position);
+                var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
+                AddTargetPositionEntity(chefCustomerEntity.waitingCustomer.position);
             }
         }
     }
 
-    protected override bool Filter(GameEntity entity)
-    {
-        return entity.isEnabled == false;
-    }
+    protected override bool Filter(GameEntity entity) => !entity.isEnabled;
 
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context)
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Cooldown).Removed());
+
+    private bool HasReachedToTargetPosition(GameEntity chefEntity, Vector3 targetPosition) =>
+        Vector3.Distance(chefEntity.position.value, targetPosition) <= Mathf.Epsilon;
+
+    private void AddTargetPositionEntity(Vector3 value)
     {
-        return context.CreateCollector(GameMatcher.AllOf(GameMatcher.Cooldown).Removed());
+        var e = _contexts.game.CreateEntity();
+        e.AddTargetPosition(value);
     }
 }

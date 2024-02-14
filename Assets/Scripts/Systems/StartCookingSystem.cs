@@ -15,23 +15,24 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
-        foreach (var entity in entities)
+        foreach (var chefEntity in entities)
         {
-            if (Vector3.Distance(entity.position.value, _restaurantTargetPositions.GetFirstKitchenSpot().position) <= Mathf.Epsilon)
-            {
-                var cooldownEntity = _contexts.game.CreateEntity();
-                cooldownEntity.AddCooldown(3f);
-            }
+            if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
+                AddCooldownEntity(3f);
         }
     }
 
-    protected override bool Filter(GameEntity entity)
-    {
-        return !entity.isMover && entity.isChef;
-    }
+    protected override bool Filter(GameEntity entity) => !entity.isMover && entity.isChef;
 
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context)
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).AnyOf(GameMatcher.Chef).Removed());
+
+    private bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
+        Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
+
+    private void AddCooldownEntity(float value)
     {
-        return context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).Removed());
+        var cooldownEntity = _contexts.game.CreateEntity();
+        cooldownEntity.AddCooldown(value);
     }
 }

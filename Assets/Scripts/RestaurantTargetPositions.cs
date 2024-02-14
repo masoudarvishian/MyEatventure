@@ -8,13 +8,4 @@ public class RestaurantTargetPositions : MonoBehaviour
     public Transform GetFirstCustomerSpot() => customerSpots[0];
 
     public Transform GetFirstKitchenSpot() => kitchenSpots[0];
-
-    private void Start()
-    {
-        var entity = Contexts.sharedInstance.game.CreateEntity();
-        entity.AddWaitingCustomer(GetFirstCustomerSpot().position);
-        entity.isPreparingOrder = false;
-        entity.AddDelivered(false);
-        entity.AddQuantity(2);
-    }
 }

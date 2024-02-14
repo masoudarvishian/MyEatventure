@@ -1,5 +1,6 @@
 ﻿using Entitas;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
@@ -13,29 +14,43 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
-        foreach (var entity in entities)
-        {
-            foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities())
-            {
-                if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon)
-                {
-                    if (waitingCustomerEntity.quantity.value > 0)
-                        waitingCustomerEntity.quantity.value--;
+        foreach (var chefEntity in entities)
+            ReduceQuantityIfHasDeliveredOrder(chefEntity);
+    }
 
-                    if (waitingCustomerEntity.quantity.value == 0)
-                        waitingCustomerEntity.ReplaceDelivered(true);
-                }
+    protected override bool Filter(GameEntity entity) => !entity.isMover && entity.isChef;
+
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).AnyOf(GameMatcher.Chef).Removed());
+
+    private void ReduceQuantityIfHasDeliveredOrder(GameEntity chefEntity)
+    {
+        var chefCustomers = _waitingCustomersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value);
+        foreach (var waitingCustomerEntity in chefCustomers)
+        {
+            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.waitingCustomer.position))
+            {
+                RecudeQuantity(waitingCustomerEntity);
+                HandleDeliveryComponents(chefEntity, waitingCustomerEntity);
             }
         }
     }
 
-    protected override bool Filter(GameEntity entity)
+    private static bool HasReachedToTargetPosition(GameEntity chefEntity, Vector3 targetPosition) =>
+        Vector3.Distance(chefEntity.position.value, targetPosition) <= Mathf.Epsilon;
+
+    private static void RecudeQuantity(GameEntity waitingCustomerEntity)
     {
-        return !entity.isMover && entity.isChef;
+        if (waitingCustomerEntity.quantity.value > 0)
+            waitingCustomerEntity.quantity.value--;
     }
 
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context)
+    private static void HandleDeliveryComponents(GameEntity chefEntity, GameEntity waitingCustomerEntity)
     {
-        return context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).Removed());
+        if (waitingCustomerEntity.quantity.value != 0)
+            return;
+
+        waitingCustomerEntity.ReplaceDelivered(true);
+        chefEntity.RemoveCustomerIndex();
     }
 }

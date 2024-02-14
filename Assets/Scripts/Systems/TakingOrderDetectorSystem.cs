@@ -17,9 +17,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
     protected override void Execute(List<GameEntity> entities)
     {
         foreach (var chefEntity in entities)
-        {
             TryToAddCooldownIfChefHasReachedToCustomer(chefEntity);
-        }
     }
 
     private void TryToAddCooldownIfChefHasReachedToCustomer(GameEntity chefEntity)

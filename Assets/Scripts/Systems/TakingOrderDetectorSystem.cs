@@ -10,41 +10,47 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.WaitingCustomer));
+        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.WaitingCustomer);
         _contexts = contexts;
     }
 
     protected override void Execute(List<GameEntity> entities)
     {
-        foreach (var entity in entities)
+        foreach (var chefEntity in entities)
         {
-            foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
-            {
-                if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon &&
-                    waitingCustomerEntity.isPreparingOrder)
-                {
-                    var cooldownEntity = _contexts.game.CreateEntity();
-                    cooldownEntity.AddCooldown(0.1f);
-                    continue;
-                }
+            TryToAddCooldownIfChefHasReachedToCustomer(chefEntity);
+        }
+    }
 
-                if (Vector3.Distance(entity.position.value, waitingCustomerEntity.waitingCustomer.position) <= Mathf.Epsilon)
-                {
-                    var cooldownEntity = _contexts.game.CreateEntity();
-                    cooldownEntity.AddCooldown(2f);
-                    waitingCustomerEntity.isPreparingOrder = true;
-                }
+    private void TryToAddCooldownIfChefHasReachedToCustomer(GameEntity chefEntity)
+    {
+        foreach (var waitingCustomerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
+        {
+            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.waitingCustomer.position) && waitingCustomerEntity.isPreparingOrder)
+            {
+                AddCooldownEntity(0.1f);
+                continue;
+            }
+
+            if (HasReachedToTargetPosition(chefEntity, waitingCustomerEntity.waitingCustomer.position))
+            {
+                AddCooldownEntity(2f);
+                waitingCustomerEntity.isPreparingOrder = true;
             }
         }
     }
 
-    protected override bool Filter(GameEntity entity)
+    private void AddCooldownEntity(float value)
     {
-        return !entity.isMover && entity.isChef;
+        var cooldownEntity = _contexts.game.CreateEntity();
+        cooldownEntity.AddCooldown(value);
     }
 
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context)
-    {
-        return context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).Removed());
-    }
+    private static bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
+        Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
+
+    protected override bool Filter(GameEntity entity) => !entity.isMover && entity.isChef;
+
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Mover).AnyOf(GameMatcher.Chef).Removed());
 }

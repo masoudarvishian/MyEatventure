@@ -10,11 +10,13 @@ public sealed class MoveCustomerSystem : IExecuteSystem
     private float _speed = 3.0f;
     private readonly Contexts _contexts;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
+    private readonly Transform _customerLeavingPoint;
 
-    public MoveCustomerSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions)
+    public MoveCustomerSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions, Transform customerLeavingPoint)
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
+        _customerLeavingPoint = customerLeavingPoint;
         _frontDeskGroup = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot);
         _customerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
         _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
@@ -36,6 +38,11 @@ public sealed class MoveCustomerSystem : IExecuteSystem
                 freeChefEntity.AddCustomerIndex(customerEntity.creationIndex);
                 freeChefEntity.AddTargetPosition(customerEntity.targetDeskPosition.value);
             }
+        }
+
+        foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.delivered.value))
+        {
+            MoveEntity(customerEntity, _customerLeavingPoint.position);
         }
     }
 

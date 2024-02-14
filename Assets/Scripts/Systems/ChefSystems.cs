@@ -3,7 +3,7 @@
 public class ChefSystems : Feature
 {
     public ChefSystems(Contexts contexts, GameObject chefPrefab, CooldownHelper cooldownHelper, RestaurantTargetPositions restaurantTargetPositions, 
-        GameObject customersPrefab, GameObject customersParent, Transform customerSpawnPoint)
+        GameObject customersPrefab, GameObject customersParent, Transform customerSpawnPoint, Transform customerLeavingPoint)
     {
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));
         Add(new CreateChefSystem(contexts, chefPrefab));
@@ -18,6 +18,6 @@ public class ChefSystems : Feature
         Add(new PreparingOrderDetectorSystem(contexts, restaurantTargetPositions));
         Add(new StartCookingSystem(contexts, restaurantTargetPositions));
         Add(new ReadyOrderDetectorSystem(contexts, restaurantTargetPositions));
-        Add(new MoveCustomerSystem(contexts, restaurantTargetPositions));
+        Add(new MoveCustomerSystem(contexts, restaurantTargetPositions, customerLeavingPoint));
     }
 }

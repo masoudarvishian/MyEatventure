@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private GameObject _customersPrefab;
     [SerializeField] private GameObject _customersParent;
     [SerializeField] private Transform _customerSpawnPoint;
+    [SerializeField] private Transform _customerLeavingPoint;
 
     private Systems _systems;
 
@@ -17,7 +18,7 @@ public class GameController : MonoBehaviour
     {
         _systems = new Feature().Add(
             new ChefSystems(Contexts.sharedInstance, _chefPrefab, _cooldownHelper, _restaurantTargetPositions,
-            _customersPrefab, _customersParent, _customerSpawnPoint)
+            _customersPrefab, _customersParent, _customerSpawnPoint, _customerLeavingPoint)
         );
         _systems.Initialize();
     }

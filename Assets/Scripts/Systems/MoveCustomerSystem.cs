@@ -1,6 +1,5 @@
 ﻿using Entitas;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public sealed class MoveCustomerSystem : IExecuteSystem
@@ -22,7 +21,7 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 
     public void Execute()
     {
-        foreach (var entity in _customerGroup.GetEntities().Where(x => x.isCustomer))
+        foreach (var entity in _customerGroup.GetEntities())
         {
             var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
             

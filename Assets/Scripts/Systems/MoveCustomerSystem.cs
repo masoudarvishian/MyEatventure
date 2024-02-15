@@ -31,9 +31,8 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 
             if (Vector3.Distance(customerEntity.position.value, customerEntity.targetPosition.value) <= Mathf.Epsilon)
             {
-                customerEntity.visual.gameObject.transform.GetChild(0).gameObject.SetActive(true);
-                customerEntity.visual.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = customerEntity.quantity.value.ToString();
-
+                customerEntity.isShowCanvas = true;
+                
                 customerEntity.RemoveTargetPosition();
                 var deskEntity = _frontDeskGroup.GetEntities().First(x => x.index.value == customerEntity.targetDeskIndex.value);
 

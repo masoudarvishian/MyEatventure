@@ -18,6 +18,7 @@ public class ChefSystems : Feature
         Add(new PreparingOrderDetectorSystem(contexts, restaurantTargetPositions));
         Add(new StartCookingSystem(contexts, restaurantTargetPositions));
         Add(new ReadyOrderDetectorSystem(contexts, restaurantTargetPositions));
+        Add(new CustomerUIPopupSystem(contexts));
         Add(new MoveCustomerSystem(contexts, restaurantTargetPositions, customerLeavingPoint));
     }
 }

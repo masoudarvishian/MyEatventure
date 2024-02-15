@@ -44,6 +44,9 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 
         foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.delivered.value))
         {
+            if (customerEntity.isShowCanvas)
+                customerEntity.isShowCanvas = false;
+
             MoveEntity(customerEntity, _customerLeavingPoint.position);
             if (Vector3.Distance(customerEntity.position.value, _customerLeavingPoint.position) <= Mathf.Epsilon)
             {

@@ -45,8 +45,7 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
     {
         if (customerEntity.quantity.value > 0)
             customerEntity.quantity.value--;
-
-        customerEntity.visual.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = customerEntity.quantity.value.ToString();
+        UpdateQuantityUI(customerEntity);
     }
 
     private void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)
@@ -58,5 +57,10 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
         frontDeskEntity.isOccupied = false;
         customerEntity.ReplaceDelivered(true);
         chefEntity.RemoveCustomerIndex();
+    }
+
+    private static void UpdateQuantityUI(GameEntity customerEntity)
+    {
+        customerEntity.visual.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = customerEntity.quantity.value.ToString();
     }
 }

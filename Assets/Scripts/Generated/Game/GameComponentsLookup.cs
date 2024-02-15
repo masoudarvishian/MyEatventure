@@ -50,7 +50,6 @@ public static class GameComponentsLookup {
 
     public static readonly System.Type[] componentTypes = {
         typeof(ChefComponent),
-        typeof(CooldownComponent),
         typeof(CustomerComponent),
         typeof(CustomerIndexComponent),
         typeof(DeliveredComponent),

@@ -24,8 +24,9 @@ public static class GameComponentsLookup {
     public const int TargetDeskPosition = 13;
     public const int TargetPosition = 14;
     public const int Visual = 15;
+    public const int Waiting = 16;
 
-    public const int TotalComponents = 16;
+    public const int TotalComponents = 17;
 
     public static readonly string[] componentNames = {
         "Chef",
@@ -43,7 +44,8 @@ public static class GameComponentsLookup {
         "TargetDeskIndex",
         "TargetDeskPosition",
         "TargetPosition",
-        "Visual"
+        "Visual",
+        "Waiting"
     };
 
     public static readonly System.Type[] componentTypes = {
@@ -62,6 +64,7 @@ public static class GameComponentsLookup {
         typeof(TargetDeskIndexComponent),
         typeof(TargetDeskPositionComponent),
         typeof(TargetPositionComponent),
-        typeof(VisualComponent)
+        typeof(VisualComponent),
+        typeof(WaitingComponent)
     };
 }

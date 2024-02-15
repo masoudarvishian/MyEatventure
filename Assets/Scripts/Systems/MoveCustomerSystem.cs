@@ -7,18 +7,14 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 {
     private IGroup<GameEntity> _customerGroup;
     private IGroup<GameEntity> _chefGroup;
-    private readonly IGroup<GameEntity> _frontDeskGroup;
     private float _speed = 3.0f;
     private readonly Contexts _contexts;
-    private readonly RestaurantTargetPositions _restaurantTargetPositions;
     private readonly Transform _customerLeavingPoint;
 
-    public MoveCustomerSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions, Transform customerLeavingPoint)
+    public MoveCustomerSystem(Contexts contexts, Transform customerLeavingPoint)
     {
         _contexts = contexts;
-        _restaurantTargetPositions = restaurantTargetPositions;
         _customerLeavingPoint = customerLeavingPoint;
-        _frontDeskGroup = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot);
         _customerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
         _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
     }
@@ -32,13 +28,15 @@ public sealed class MoveCustomerSystem : IExecuteSystem
             if (Vector3.Distance(customerEntity.position.value, customerEntity.targetPosition.value) <= Mathf.Epsilon)
             {
                 customerEntity.isShowCanvas = true;
+                customerEntity.isWaiting = true;
                 
                 customerEntity.RemoveTargetPosition();
-                var deskEntity = _frontDeskGroup.GetEntities().First(x => x.index.value == customerEntity.targetDeskIndex.value);
 
-                var freeChefEntity = _chefGroup.GetEntities().First(x => !x.hasCustomerIndex);
-                freeChefEntity.AddCustomerIndex(customerEntity.creationIndex);
-                freeChefEntity.AddTargetPosition(customerEntity.targetDeskPosition.value);
+                //foreach (var freeChefEntity in _chefGroup.GetEntities().Where(x => !x.hasCustomerIndex))
+                //{
+                //    freeChefEntity.AddCustomerIndex(customerEntity.creationIndex);
+                //    freeChefEntity.AddTargetPosition(customerEntity.targetDeskPosition.value);
+                //}
             }
         }
 

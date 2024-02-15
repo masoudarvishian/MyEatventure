@@ -11,6 +11,7 @@ public sealed class CreateCustomerSystem : IExecuteSystem
     private readonly Transform _customerSpawnPoint;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
     private readonly IGroup<GameEntity> _frontDeskGroup;
+    private readonly int _maxRestaurantCapacity = 3;
 
     public CreateCustomerSystem(Contexts contexts, GameObject customerPrefab, GameObject customersParent, Transform customerSpawnPoint,
         RestaurantTargetPositions restaurantTargetPositions)
@@ -27,6 +28,10 @@ public sealed class CreateCustomerSystem : IExecuteSystem
     {
         if (Input.GetKeyDown(KeyCode.C))
         {
+            var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
+            if (occupiedDeskCount >= _maxRestaurantCapacity)
+                return;
+
             GameObject customerObj = InstantiateCustomerPrefab();
             GameEntity customerEntity = CreateCustomerEntity(customerObj);
 

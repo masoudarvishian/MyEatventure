@@ -6,16 +6,18 @@ public sealed class PreparingOrderDetectorSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
+    private readonly IGroup<GameEntity> _chefGroup;
 
     public PreparingOrderDetectorSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
+        _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
     }
 
     protected override void Execute(List<GameEntity> entities)
     {
-        foreach (var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
+        foreach (var chefEntity in _chefGroup.GetEntities())
         {
             if (HasNotReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
                 chefEntity.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);

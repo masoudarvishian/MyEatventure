@@ -34,6 +34,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
             {
                 AddCooldownEntity(1f);
                 customerEntity.isPreparingOrder = true;
+                customerEntity.isWaiting = false;
             }
         }
     }

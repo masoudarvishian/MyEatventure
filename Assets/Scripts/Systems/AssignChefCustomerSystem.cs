@@ -24,6 +24,9 @@ public sealed class AssignChefCustomerSystem : IExecuteSystem
             var waitingCustomerEntity = _waitingCustomersQueue.ElementAt(i);
             foreach (var freeChefEntity in _freeChefGroup.GetEntities())
             {
+                if (_waitingCustomersQueue.Count == 0)
+                    break;
+
                 freeChefEntity.AddCustomerIndex(waitingCustomerEntity.creationIndex);
                 freeChefEntity.AddTargetPosition(waitingCustomerEntity.targetDeskPosition.value);
                 _waitingCustomersQueue.Dequeue();

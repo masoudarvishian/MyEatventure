@@ -1,6 +1,7 @@
 ﻿using Entitas;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -8,12 +9,14 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
+    private readonly IGroup<GameEntity> _waitingCustomerGroup;
     private CompositeDisposable _compositeDisposable = new();
 
     public StartCookingSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
     {
         _contexts = contexts;
         _restaurantTargetPositions = restaurantTargetPositions;
+        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
     }
 
     ~StartCookingSystem()
@@ -31,6 +34,9 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
                 chefEntity.AddCooldown(cooldownDuration);
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
                     chefEntity.RemoveCooldown();
+
+                    var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
+                    chefEntity.AddTargetPosition(chefCustomerEntity.targetDeskPosition.value);
                 }).AddTo(_compositeDisposable);
             }
         }

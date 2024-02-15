@@ -17,26 +17,23 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
     protected override void Execute(List<GameEntity> entities)
     {
         foreach (var chefEntity in entities)
-            ReduceQuantityIfHasDeliveredOrder(chefEntity);
-    }
-
-    protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
-
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
-
-    private void ReduceQuantityIfHasDeliveredOrder(GameEntity chefEntity)
-    {
-        var chefCustomers = _customersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value);
-        foreach (var customerEntity in chefCustomers)
         {
-            if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
+            foreach (var customerEntity in _customersGroup.GetEntities().Where(x => x.creationIndex == chefEntity.customerIndex.value))
             {
-                RecudeQuantity(customerEntity);
-                HandleDeliveryComponents(chefEntity, customerEntity);
+                if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
+                {
+                    RecudeQuantity(customerEntity);
+                    HandleDeliveryComponents(chefEntity, customerEntity);
+                    break;
+                }
             }
         }
     }
+
+    protected override bool Filter(GameEntity entity) => entity.isChef && entity.hasCustomerIndex;
+
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
 
     private static bool HasReachedToTargetPosition(GameEntity chefEntity, Vector3 targetPosition) =>
         Vector3.Distance(chefEntity.position.value, targetPosition) <= Mathf.Epsilon;

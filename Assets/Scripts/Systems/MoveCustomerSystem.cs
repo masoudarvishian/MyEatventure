@@ -21,6 +21,7 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 
     public void Execute()
     {
+        // move toward the restaurant
         foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.hasTargetPosition))
         {
             MoveEntity(customerEntity, customerEntity.targetPosition.value);
@@ -34,6 +35,7 @@ public sealed class MoveCustomerSystem : IExecuteSystem
             }
         }
 
+        // leave the restaurant
         foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.delivered.value))
         {
             if (customerEntity.isShowCanvas)

@@ -18,8 +18,15 @@ public class GameController : MonoBehaviour
     private void Start()
     {
         _systems = new Feature().Add(
-            new RootSystems(Contexts.sharedInstance, _chefPrefab, _restaurantTargetPositions,
-            _customersPrefab, _customersParent, _customerSpawnPoint, _customerLeavingPoint, _coinText)
+            new RootSystems(
+                Contexts.sharedInstance, 
+                _chefPrefab, 
+                _restaurantTargetPositions,
+                _customersPrefab, 
+                _customersParent, 
+                _customerSpawnPoint, 
+                _customerLeavingPoint,
+                _coinText)
         );
         _systems.Initialize();
     }

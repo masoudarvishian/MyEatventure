@@ -27,26 +27,27 @@ public sealed class RepositorySystem : IInitializeSystem
 
     public void Initialize()
     {
-        DeliveryOrderSystem.OnOrderIsDelivered.Subscribe(_ =>
-        {
-            var repositoryEntity = _contexts.game.GetGroup(GameMatcher.Coin).GetEntities().First();
-            var currentCoins = repositoryEntity.coin.value;
-            var newValue = currentCoins + coinsPerPurchase;
-            repositoryEntity.ReplaceCoin(newValue);
-            repositoryEntity.visual.gameObject.GetComponent<TMP_Text>().text = newValue.ToString();
-        }).AddTo(_compositeDisposable);
-
+        DeliveryOrderSystem.OnOrderIsDelivered.Subscribe(_ => OnOrderIsDelivered()).AddTo(_compositeDisposable);
         CreateAndLinkEntity();
+    }
+
+    private void OnOrderIsDelivered()
+    {
+        var repositoryEntity = GetRepositoryEntity();
+        var currentCoins = repositoryEntity.coin.value;
+        var newValue = currentCoins + coinsPerPurchase;
+        repositoryEntity.ReplaceCoin(newValue);
+        repositoryEntity.visual.gameObject.GetComponent<TMP_Text>().text = newValue.ToString();
     }
 
     private void CreateAndLinkEntity()
     {
         var e = _contexts.game.CreateEntity();
         e.AddCoin(InitialCoinValue);
-
-        _coinText.text = InitialCoinValue.ToString();
-
         e.AddVisual(_coinText.gameObject);
+        _coinText.text = InitialCoinValue.ToString();
         _coinText.gameObject.Link(e);
     }
+
+    private GameEntity GetRepositoryEntity() => _contexts.game.GetGroup(GameMatcher.Coin).GetEntities().First();
 }

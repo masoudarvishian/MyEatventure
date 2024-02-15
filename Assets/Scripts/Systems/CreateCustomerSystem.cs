@@ -57,7 +57,7 @@ public sealed class CreateCustomerSystem : IExecuteSystem
         entity.AddPosition(customerObj.transform.position);
         entity.isPreparingOrder = false;
         entity.AddDelivered(false);
-        entity.AddQuantity(2);
+        entity.AddQuantity(Random.Range(1, 3));
         entity.AddVisual(customerObj);
         return entity;
     }

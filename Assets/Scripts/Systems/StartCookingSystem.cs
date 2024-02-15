@@ -18,7 +18,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         foreach (var chefEntity in entities)
         {
             if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
-                AddCooldownEntity(3f);
+                AddCooldownEntity(2f);
         }
     }
 

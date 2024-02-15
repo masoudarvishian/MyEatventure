@@ -32,7 +32,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
             if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
             {
-                AddCooldownEntity(2f);
+                AddCooldownEntity(1f);
                 customerEntity.isPreparingOrder = true;
             }
         }

@@ -1,4 +1,5 @@
 ﻿using Entitas;
+using Entitas.Unity;
 using System.Linq;
 using UnityEngine;
 
@@ -30,6 +31,9 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 
             if (Vector3.Distance(customerEntity.position.value, customerEntity.targetPosition.value) <= Mathf.Epsilon)
             {
+                customerEntity.visual.gameObject.transform.GetChild(0).gameObject.SetActive(true);
+                customerEntity.visual.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = customerEntity.quantity.value.ToString();
+
                 customerEntity.RemoveTargetPosition();
                 var deskEntity = _frontDeskGroup.GetEntities().First(x => x.index.value == customerEntity.targetDeskIndex.value);
 
@@ -42,6 +46,12 @@ public sealed class MoveCustomerSystem : IExecuteSystem
         foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.delivered.value))
         {
             MoveEntity(customerEntity, _customerLeavingPoint.position);
+            if (Vector3.Distance(customerEntity.position.value, _customerLeavingPoint.position) <= Mathf.Epsilon)
+            {
+                customerEntity.visual.gameObject.Unlink();
+                GameObject.Destroy(customerEntity.visual.gameObject);
+                customerEntity.Destroy();
+            }
         }
     }
 

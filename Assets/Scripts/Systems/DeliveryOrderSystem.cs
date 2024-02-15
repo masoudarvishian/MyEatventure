@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEditor.Timeline.TimelinePlaybackControls;
 
 public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 {
@@ -46,6 +45,8 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
     {
         if (customerEntity.quantity.value > 0)
             customerEntity.quantity.value--;
+
+        customerEntity.visual.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = customerEntity.quantity.value.ToString();
     }
 
     private void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)

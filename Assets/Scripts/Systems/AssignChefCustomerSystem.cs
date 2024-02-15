@@ -6,15 +6,13 @@ public sealed class AssignChefCustomerSystem : IExecuteSystem
 {
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _freeChefGroup;
-    private readonly IGroup<GameEntity> _waitingCustomerGroup;
     private readonly Queue<GameEntity> _waitingCustomersQueue = new();
 
     public AssignChefCustomerSystem(Contexts contexts)
     {
         _contexts = contexts;
         _freeChefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).NoneOf(GameMatcher.CustomerIndex));
-        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Customer).AnyOf(GameMatcher.Waiting));
-        _waitingCustomerGroup.OnEntityAdded += OnWaitingCustomerAdded;
+        _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Customer).AnyOf(GameMatcher.Waiting)).OnEntityAdded += OnWaitingCustomerAdded;
     }
 
     public void Execute()

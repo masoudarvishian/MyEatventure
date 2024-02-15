@@ -8,8 +8,8 @@
 //------------------------------------------------------------------------------
 public static class GameComponentsLookup {
 
-    public const int Chef = 0;
-    public const int Cooldown = 1;
+    public const int BuysKitchen = 0;
+    public const int Chef = 1;
     public const int Customer = 2;
     public const int CustomerIndex = 3;
     public const int Delivered = 4;
@@ -29,8 +29,8 @@ public static class GameComponentsLookup {
     public const int TotalComponents = 17;
 
     public static readonly string[] componentNames = {
+        "BuysKitchen",
         "Chef",
-        "Cooldown",
         "Customer",
         "CustomerIndex",
         "Delivered",
@@ -49,6 +49,7 @@ public static class GameComponentsLookup {
     };
 
     public static readonly System.Type[] componentTypes = {
+        typeof(BuysKitchenComponent),
         typeof(ChefComponent),
         typeof(CustomerComponent),
         typeof(CustomerIndexComponent),

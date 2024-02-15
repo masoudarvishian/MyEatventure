@@ -1,33 +1,32 @@
 ﻿using Entitas;
-using System.Linq;
 using UnityEngine;
 
 internal class MovingChefSystem : IExecuteSystem
 {
     private readonly Contexts _contexts;
-    private readonly IGroup<GameEntity> _chefGroup;
+    private readonly IGroup<GameEntity> _chefWithTargetPositionGroup;
     private float _speed = 4.0f;
 
     public MovingChefSystem(Contexts contexts)
     {
         _contexts = contexts;
-        _chefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef));
+        _chefWithTargetPositionGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).AnyOf(GameMatcher.TargetPosition));
     }
 
     public void Execute()
     {
-        foreach (var entity in _chefGroup.GetEntities().Where(x => x.hasTargetPosition))
+        foreach (var chefEntity in _chefWithTargetPositionGroup.GetEntities())
         {
-            MoveEntity(entity);
-            if (HasReachedToTargetPosition(entity.position.value, entity.targetPosition.value))
-                entity.RemoveTargetPosition();
+            MoveEntity(chefEntity, chefEntity.targetPosition.value);
+            if (HasReachedToTargetPosition(chefEntity.position.value, chefEntity.targetPosition.value))
+                chefEntity.RemoveTargetPosition();
         }
     }
 
-    private void MoveEntity(GameEntity entity)
+    private void MoveEntity(GameEntity entity, Vector3 targetPosition)
     {
         var entityTransform = entity.visual.gameObject.transform;
-        entityTransform.position = Vector3.MoveTowards(entityTransform.position, entity.targetPosition.value, GetStep());
+        entityTransform.position = Vector3.MoveTowards(entityTransform.position, targetPosition, GetStep());
         entity.position.value = entityTransform.position;
     }
 

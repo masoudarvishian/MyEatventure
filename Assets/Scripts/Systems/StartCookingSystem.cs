@@ -30,10 +30,14 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         {
             if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
             {
+                var busyKitchenEntity = _contexts.game.CreateEntity();
+                busyKitchenEntity.isBuysKitchen = true;
+
                 var cooldownDuration = 2f;
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
                     var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
                     chefEntity.AddTargetPosition(chefCustomerEntity.targetDeskPosition.value);
+                    busyKitchenEntity.Destroy();
                 }).AddTo(_compositeDisposable);
             }
         }

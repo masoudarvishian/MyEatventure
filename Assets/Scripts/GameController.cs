@@ -1,10 +1,9 @@
 using Entitas;
-using TMPro;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    [SerializeField] private TMP_Text _coinText;
+    [SerializeField] private DummyUI _dummyUI;
     [SerializeField] private GameObject _chefPrefab;
     [SerializeField] private RestaurantTargetPositions _restaurantTargetPositions;
 
@@ -28,7 +27,7 @@ public class GameController : MonoBehaviour
                 _customersParent, 
                 _customerSpawnPoint, 
                 _customerLeavingPoint,
-                _coinText,
+                _dummyUI,
                 drinkCoinLevelsPrice)
         );
         _systems.Initialize();

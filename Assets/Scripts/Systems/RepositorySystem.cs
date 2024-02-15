@@ -8,17 +8,21 @@ public sealed class RepositorySystem : IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly TMP_Text _coinText;
-    private readonly CoinLevelsPriceSO _coinLevelsPrice;
+    private readonly DrinkCoinLevelsPriceSO _coinLevelsPrice;
     private const int InitialCoinValue = 10;
-    private int coinsPerPurchase = 10;
 
     private CompositeDisposable _compositeDisposable = new();
 
-    public RepositorySystem(Contexts contexts, TMP_Text coinText, CoinLevelsPriceSO coinLevelsPrice)
+    private int _currentDrinkCoinLevel = 0;
+
+    public RepositorySystem(
+        Contexts contexts, 
+        TMP_Text coinText, 
+        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice)
     {
         _contexts = contexts;
         _coinText = coinText;
-        _coinLevelsPrice = coinLevelsPrice;
+        _coinLevelsPrice = drinkCoinLevelsPrice;
     }
 
     ~RepositorySystem()
@@ -36,7 +40,7 @@ public sealed class RepositorySystem : IInitializeSystem
     {
         var repositoryEntity = GetRepositoryEntity();
         var currentCoins = repositoryEntity.coin.value;
-        var newValue = currentCoins + coinsPerPurchase;
+        var newValue = currentCoins + _coinLevelsPrice.coinLevels[_currentDrinkCoinLevel].coin;
         repositoryEntity.ReplaceCoin(newValue);
         repositoryEntity.visual.gameObject.GetComponent<TMP_Text>().text = newValue.ToString();
     }

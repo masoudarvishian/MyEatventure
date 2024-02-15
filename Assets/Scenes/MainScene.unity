@@ -634,6 +634,7 @@ MonoBehaviour:
   _customersParent: {fileID: 330818634}
   _customerSpawnPoint: {fileID: 1843072470}
   _customerLeavingPoint: {fileID: 1439876217}
+  drinkCoinLevelsPrice: {fileID: 11400000, guid: 7d63f4f7ca7a0d34dbe0a8256bfce53b, type: 2}
 --- !u!4 &1070829778
 Transform:
   m_ObjectHideFlags: 0

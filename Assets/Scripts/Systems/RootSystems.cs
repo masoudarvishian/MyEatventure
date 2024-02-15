@@ -12,14 +12,14 @@ public class RootSystems : Feature
         Transform customerSpawnPoint, 
         Transform customerLeavingPoint, 
         TMP_Text coinText, 
-        CoinLevelsPriceSO coinLevelsPrice)
+        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice)
     {
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));
         Add(new CreateChefSystem(contexts, chefPrefab));
         Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint, restaurantTargetPositions));
         Add(new MovingChefSystem(contexts));
         Add(new DeliveryOrderSystem(contexts));
-        Add(new RepositorySystem(contexts, coinText, coinLevelsPrice));
+        Add(new RepositorySystem(contexts, coinText, drinkCoinLevelsPrice));
         Add(new TakingOrderDetectorSystem(contexts, restaurantTargetPositions));
         Add(new StartCookingSystem(contexts, restaurantTargetPositions));
         Add(new CustomerUIPopupSystem(contexts));

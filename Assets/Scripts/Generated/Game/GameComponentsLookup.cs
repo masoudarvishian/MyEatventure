@@ -10,27 +10,29 @@ public static class GameComponentsLookup {
 
     public const int BuysKitchen = 0;
     public const int Chef = 1;
-    public const int Customer = 2;
-    public const int CustomerIndex = 3;
-    public const int Delivered = 4;
-    public const int FrontDeskSpot = 5;
-    public const int Index = 6;
-    public const int Occupied = 7;
-    public const int Position = 8;
-    public const int PreparingOrder = 9;
-    public const int Quantity = 10;
-    public const int ShowCanvas = 11;
-    public const int TargetDeskIndex = 12;
-    public const int TargetDeskPosition = 13;
-    public const int TargetPosition = 14;
-    public const int Visual = 15;
-    public const int Waiting = 16;
+    public const int Coin = 2;
+    public const int Customer = 3;
+    public const int CustomerIndex = 4;
+    public const int Delivered = 5;
+    public const int FrontDeskSpot = 6;
+    public const int Index = 7;
+    public const int Occupied = 8;
+    public const int Position = 9;
+    public const int PreparingOrder = 10;
+    public const int Quantity = 11;
+    public const int ShowCanvas = 12;
+    public const int TargetDeskIndex = 13;
+    public const int TargetDeskPosition = 14;
+    public const int TargetPosition = 15;
+    public const int Visual = 16;
+    public const int Waiting = 17;
 
-    public const int TotalComponents = 17;
+    public const int TotalComponents = 18;
 
     public static readonly string[] componentNames = {
         "BuysKitchen",
         "Chef",
+        "Coin",
         "Customer",
         "CustomerIndex",
         "Delivered",
@@ -51,6 +53,7 @@ public static class GameComponentsLookup {
     public static readonly System.Type[] componentTypes = {
         typeof(BuysKitchenComponent),
         typeof(ChefComponent),
+        typeof(CoinComponent),
         typeof(CustomerComponent),
         typeof(CustomerIndexComponent),
         typeof(DeliveredComponent),

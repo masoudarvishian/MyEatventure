@@ -5,6 +5,7 @@ public class RootSystems : Feature
     public RootSystems(Contexts contexts, GameObject chefPrefab, RestaurantTargetPositions restaurantTargetPositions, 
         GameObject customersPrefab, GameObject customersParent, Transform customerSpawnPoint, Transform customerLeavingPoint)
     {
+        Add(new RepositorySystem(contexts));
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));
         Add(new CreateChefSystem(contexts, chefPrefab));
         Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint, restaurantTargetPositions));

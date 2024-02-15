@@ -31,12 +31,6 @@ public sealed class MoveCustomerSystem : IExecuteSystem
                 customerEntity.isWaiting = true;
                 
                 customerEntity.RemoveTargetPosition();
-
-                //foreach (var freeChefEntity in _chefGroup.GetEntities().Where(x => !x.hasCustomerIndex))
-                //{
-                //    freeChefEntity.AddCustomerIndex(customerEntity.creationIndex);
-                //    freeChefEntity.AddTargetPosition(customerEntity.targetDeskPosition.value);
-                //}
             }
         }
 

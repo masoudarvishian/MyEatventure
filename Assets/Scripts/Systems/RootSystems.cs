@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class ChefSystems : Feature
+public class RootSystems : Feature
 {
-    public ChefSystems(Contexts contexts, GameObject chefPrefab, CooldownHelper cooldownHelper, RestaurantTargetPositions restaurantTargetPositions, 
+    public RootSystems(Contexts contexts, GameObject chefPrefab, CooldownHelper cooldownHelper, RestaurantTargetPositions restaurantTargetPositions, 
         GameObject customersPrefab, GameObject customersParent, Transform customerSpawnPoint, Transform customerLeavingPoint)
     {
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));

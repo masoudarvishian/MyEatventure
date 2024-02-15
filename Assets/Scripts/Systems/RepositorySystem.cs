@@ -27,7 +27,7 @@ public sealed class RepositorySystem : IInitializeSystem
 
     public void Initialize()
     {
-        DeliveryOrderSystem.OnAddCoin.Subscribe(_ =>
+        DeliveryOrderSystem.OnOrderIsDelivered.Subscribe(_ =>
         {
             var repositoryEntity = _contexts.game.GetGroup(GameMatcher.Coin).GetEntities().First();
             var currentCoins = repositoryEntity.coin.value;

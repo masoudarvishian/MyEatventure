@@ -10,8 +10,8 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
     private IGroup<GameEntity> _customersGroup;
     private readonly Contexts _contexts;
 
-    private static Subject<Unit> _onAddCoinSubject = new Subject<Unit>();
-    public static IObservable<Unit> OnAddCoin => _onAddCoinSubject;
+    private static Subject<Unit> _onOrderIsDeliverdSubject = new Subject<Unit>();
+    public static IObservable<Unit> OnOrderIsDelivered => _onOrderIsDeliverdSubject;
 
     public DeliveryOrderSystem(Contexts contexts) : base(contexts.game)
     {
@@ -27,6 +27,7 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
             {
                 if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
                 {
+                    _onOrderIsDeliverdSubject?.OnNext(Unit.Default);
                     RecudeQuantity(customerEntity);
                     HandleDeliveryComponents(chefEntity, customerEntity);
                     break;
@@ -48,7 +49,6 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
         if (customerEntity.quantity.value > 0)
             customerEntity.quantity.value--;
         UpdateQuantityUI(customerEntity);
-        _onAddCoinSubject?.OnNext(Unit.Default);
     }
 
     private void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)

@@ -30,17 +30,13 @@ public sealed class CreateCustomerSystem : IExecuteSystem
             GameObject customerObj = InstantiateCustomerPrefab();
             GameEntity customerEntity = CreateCustomerEntity(customerObj);
 
-
-
-            //var freeChefEntity = _contexts.game.GetGroup(GameMatcher.Chef).GetEntities().Where(x => !x.hasCustomerIndex).First();
-
             var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
             var behindDeskTargetPos = _restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
             
             customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
             customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
             customerEntity.AddTargetDeskIndex(emptyFrontDeskEntity.index.value);
-
+            emptyFrontDeskEntity.isOccupied = true;
 
             customerObj.Link(customerEntity);
         }

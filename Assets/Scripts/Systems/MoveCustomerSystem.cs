@@ -32,7 +32,6 @@ public sealed class MoveCustomerSystem : IExecuteSystem
             {
                 customerEntity.RemoveTargetPosition();
                 var deskEntity = _frontDeskGroup.GetEntities().First(x => x.index.value == customerEntity.targetDeskIndex.value);
-                deskEntity.isOccupied = true;
 
                 var freeChefEntity = _chefGroup.GetEntities().First(x => !x.hasCustomerIndex);
                 freeChefEntity.AddCustomerIndex(customerEntity.creationIndex);

@@ -31,10 +31,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
             if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
             {
                 var cooldownDuration = 2f;
-                chefEntity.AddCooldown(cooldownDuration);
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
-                    chefEntity.RemoveCooldown();
-
                     var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
                     chefEntity.AddTargetPosition(chefCustomerEntity.targetDeskPosition.value);
                 }).AddTo(_compositeDisposable);

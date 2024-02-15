@@ -1,12 +1,17 @@
 ﻿using Entitas;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 
 public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 {
     private IGroup<GameEntity> _customersGroup;
     private readonly Contexts _contexts;
+
+    private static Subject<Unit> _onAddCoinSubject = new Subject<Unit>();
+    public static IObservable<Unit> OnAddCoin => _onAddCoinSubject;
 
     public DeliveryOrderSystem(Contexts contexts) : base(contexts.game)
     {
@@ -43,6 +48,7 @@ public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
         if (customerEntity.quantity.value > 0)
             customerEntity.quantity.value--;
         UpdateQuantityUI(customerEntity);
+        _onAddCoinSubject?.OnNext(Unit.Default);
     }
 
     private void HandleDeliveryComponents(GameEntity chefEntity, GameEntity customerEntity)

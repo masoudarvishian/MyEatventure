@@ -13,6 +13,8 @@ public class GameController : MonoBehaviour
     [SerializeField] private Transform _customerSpawnPoint;
     [SerializeField] private Transform _customerLeavingPoint;
 
+    [SerializeField] private CoinLevelsPriceSO coinLevelsPrice;
+
     private Systems _systems;
 
     private void Start()
@@ -26,7 +28,8 @@ public class GameController : MonoBehaviour
                 _customersParent, 
                 _customerSpawnPoint, 
                 _customerLeavingPoint,
-                _coinText)
+                _coinText,
+                coinLevelsPrice)
         );
         _systems.Initialize();
     }

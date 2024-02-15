@@ -8,16 +8,17 @@ public sealed class RepositorySystem : IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly TMP_Text _coinText;
-
+    private readonly CoinLevelsPriceSO _coinLevelsPrice;
     private const int InitialCoinValue = 10;
     private int coinsPerPurchase = 10;
 
     private CompositeDisposable _compositeDisposable = new();
 
-    public RepositorySystem(Contexts contexts, TMPro.TMP_Text coinText)
+    public RepositorySystem(Contexts contexts, TMP_Text coinText, CoinLevelsPriceSO coinLevelsPrice)
     {
         _contexts = contexts;
         _coinText = coinText;
+        _coinLevelsPrice = coinLevelsPrice;
     }
 
     ~RepositorySystem()

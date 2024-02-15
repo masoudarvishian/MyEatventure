@@ -30,7 +30,7 @@ public sealed class ReadyOrderDetectorSystem : ReactiveSystem<GameEntity>
         }
     }
 
-    protected override bool Filter(GameEntity entity) => !entity.isEnabled;
+    protected override bool Filter(GameEntity entity) => entity.isChef;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
         context.CreateCollector(GameMatcher.AllOf(GameMatcher.Cooldown).Removed());

@@ -1,11 +1,14 @@
 ﻿using Entitas;
+using System;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 internal class StartCookingSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
     private readonly RestaurantTargetPositions _restaurantTargetPositions;
+    private CompositeDisposable _compositeDisposable = new();
 
     public StartCookingSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
     {
@@ -13,12 +16,23 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         _restaurantTargetPositions = restaurantTargetPositions;
     }
 
+    ~StartCookingSystem()
+    {
+        _compositeDisposable.Dispose();
+    }
+
     protected override void Execute(List<GameEntity> entities)
     {
         foreach (var chefEntity in entities)
         {
             if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
-                AddCooldownEntity(2f);
+            {
+                var cooldownDuration = 2f;
+                chefEntity.AddCooldown(cooldownDuration);
+                Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
+                    chefEntity.RemoveCooldown();
+                }).AddTo(_compositeDisposable);
+            }
         }
     }
 
@@ -29,10 +43,4 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 
     private bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
-
-    private void AddCooldownEntity(float value)
-    {
-        var cooldownEntity = _contexts.game.CreateEntity();
-        cooldownEntity.AddCooldown(value);
-    }
 }

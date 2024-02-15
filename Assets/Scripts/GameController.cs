@@ -4,7 +4,6 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private GameObject _chefPrefab;
-    [SerializeField] private CooldownHelper _cooldownHelper;
     [SerializeField] private RestaurantTargetPositions _restaurantTargetPositions;
 
     [SerializeField] private GameObject _customersPrefab;
@@ -17,7 +16,7 @@ public class GameController : MonoBehaviour
     private void Start()
     {
         _systems = new Feature().Add(
-            new RootSystems(Contexts.sharedInstance, _chefPrefab, _cooldownHelper, _restaurantTargetPositions,
+            new RootSystems(Contexts.sharedInstance, _chefPrefab, _restaurantTargetPositions,
             _customersPrefab, _customersParent, _customerSpawnPoint, _customerLeavingPoint)
         );
         _systems.Initialize();

@@ -2,7 +2,7 @@
 
 public class RootSystems : Feature
 {
-    public RootSystems(Contexts contexts, GameObject chefPrefab, CooldownHelper cooldownHelper, RestaurantTargetPositions restaurantTargetPositions, 
+    public RootSystems(Contexts contexts, GameObject chefPrefab, RestaurantTargetPositions restaurantTargetPositions, 
         GameObject customersPrefab, GameObject customersParent, Transform customerSpawnPoint, Transform customerLeavingPoint)
     {
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));
@@ -14,7 +14,6 @@ public class RootSystems : Feature
         //Add(new CleanUpTargetPositionSystem(contexts));
         Add(new DeliveryOrderSystem(contexts));
         Add(new TakingOrderDetectorSystem(contexts));
-        Add(new CooldownSystem(contexts, cooldownHelper));
         Add(new PreparingOrderDetectorSystem(contexts, restaurantTargetPositions));
         Add(new StartCookingSystem(contexts, restaurantTargetPositions));
         Add(new ReadyOrderDetectorSystem(contexts, restaurantTargetPositions));

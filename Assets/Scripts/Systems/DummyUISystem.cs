@@ -157,6 +157,7 @@ public sealed class DummyUISystem : IInitializeSystem
 
     private void HideRestaurantUpgradeInfo()
     {
+        Debug.Log("Restaurant upgraded!");
         _dummyUI.GetRestaurantUpgradeInfo().SetActive(false);
     }
 

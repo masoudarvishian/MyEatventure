@@ -1,27 +1,28 @@
 ﻿using Entitas;
 using Entitas.Unity;
+using System;
 using System.Linq;
 using UniRx;
 
 public sealed class RepositorySystem : IInitializeSystem
 {
+    public static IObservable<int> OnCoinChanged => _onCoinChanged;
+
     private readonly Contexts _contexts;
+    private readonly DrinkCoinLevelsPriceSO _drinkCoinLevelsPrice;
     private readonly DummyUI _dummyUI;
-    private readonly DrinkCoinLevelsPriceSO _coinLevelsPrice;
     private const int InitialCoinValue = 10;
-
+    private static Subject<int> _onCoinChanged = new Subject<int>();
     private CompositeDisposable _compositeDisposable = new();
-
-    private int _currentDrinkCoinLevel = 0;
 
     public RepositorySystem(
         Contexts contexts,
-        DummyUI dummyUI,
-        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice)
+        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice,
+        DummyUI dummyUI)
     {
         _contexts = contexts;
+        _drinkCoinLevelsPrice = drinkCoinLevelsPrice;
         _dummyUI = dummyUI;
-        _coinLevelsPrice = drinkCoinLevelsPrice;
     }
 
     ~RepositorySystem()
@@ -31,54 +32,43 @@ public sealed class RepositorySystem : IInitializeSystem
 
     public void Initialize()
     {
-        DeliveryOrderSystem.OnOrderIsDelivered.Subscribe(_ => OnOrderIsDelivered()).AddTo(_compositeDisposable);
-        _dummyUI.GetUpgradeBtn().OnClickAsObservable().Subscribe(_ =>
-        {
-            UpdateEntityWithNewValue(_coinLevelsPrice.coinLevels[_currentDrinkCoinLevel].upgradePrice * -1);
-            _currentDrinkCoinLevel++;
-            _dummyUI.GetUpgradeInfo().SetActive(false);
-        }).AddTo(_compositeDisposable);
+        SubscribeToEvents();
         CreateAndLinkEntity();
     }
 
-    private void OnOrderIsDelivered()
+    private void SubscribeToEvents()
     {
-        int coinAmount = UpdateEntityWithNewValue(_coinLevelsPrice.coinLevels[_currentDrinkCoinLevel].coin);
+        DeliveryOrderSystem.OnOrderIsDelivered
+                    .Subscribe(_ => UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].coin))
+                    .AddTo(_compositeDisposable);
 
-        // handle upgrade UI
-        if (_currentDrinkCoinLevel == _coinLevelsPrice.coinLevels.Length - 1)
-            return;
-
-        if (coinAmount >= _coinLevelsPrice.coinLevels[_currentDrinkCoinLevel + 1].upgradePrice)
-        {
-            _dummyUI.GetUpgradeDrinkCostText().text = _coinLevelsPrice.coinLevels[_currentDrinkCoinLevel + 1].upgradePrice.ToString();
-            _dummyUI.GetDrinkPriceText().text = _coinLevelsPrice.coinLevels[_currentDrinkCoinLevel + 1].coin.ToString();
-            _dummyUI.GetUpgradeInfo().SetActive(true);
-        }
-        else
-        {
-            _dummyUI.GetUpgradeInfo().SetActive(false);
-        }
+        DummyUISystem.OnClickUpgrade.Subscribe(_ => OnClickUpgrade()).AddTo(_compositeDisposable);
     }
 
-    private int UpdateEntityWithNewValue(int newValue)
+    private void UpdateEntityWithValue(int value)
     {
         var repositoryEntity = GetRepositoryEntity();
         var currentCoins = repositoryEntity.coin.value;
-        var result = currentCoins + newValue;
-        repositoryEntity.ReplaceCoin(result);
-        repositoryEntity.visual.gameObject.GetComponent<DummyUI>().GetCoinText().text = result.ToString();
-        return result;
+        var newValue = currentCoins + value;
+        repositoryEntity.ReplaceCoin(newValue);
+        _onCoinChanged?.OnNext(newValue);
+    }
+
+    private GameEntity GetRepositoryEntity() => _contexts.game.GetGroup(GameMatcher.Coin).GetEntities().First();
+
+    private void OnClickUpgrade()
+    {
+        GetRepositoryEntity().currentDrinkLevel.value++;
+        UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].upgradePrice * -1);
     }
 
     private void CreateAndLinkEntity()
     {
         var e = _contexts.game.CreateEntity();
         e.AddCoin(InitialCoinValue);
+        e.AddCurrentDrinkLevel(0);
         e.AddVisual(_dummyUI.gameObject);
         _dummyUI.GetCoinText().text = InitialCoinValue.ToString();
         _dummyUI.gameObject.Link(e);
     }
-
-    private GameEntity GetRepositoryEntity() => _contexts.game.GetGroup(GameMatcher.Coin).GetEntities().First();
 }

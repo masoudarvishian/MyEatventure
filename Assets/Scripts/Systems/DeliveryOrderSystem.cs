@@ -7,12 +7,12 @@ using UnityEngine;
 
 public sealed class DeliveryOrderSystem : ReactiveSystem<GameEntity>
 {
-    private IGroup<GameEntity> _customersGroup;
-    private readonly Contexts _contexts;
-
-    private static Subject<Unit> _onOrderIsDeliverdSubject = new Subject<Unit>();
     public static IObservable<Unit> OnOrderIsDelivered => _onOrderIsDeliverdSubject;
 
+    private IGroup<GameEntity> _customersGroup;
+    private readonly Contexts _contexts;
+    private static Subject<Unit> _onOrderIsDeliverdSubject = new Subject<Unit>();
+    
     public DeliveryOrderSystem(Contexts contexts) : base(contexts.game)
     {
         _contexts = contexts;

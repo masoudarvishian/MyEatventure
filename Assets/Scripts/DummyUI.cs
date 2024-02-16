@@ -15,7 +15,10 @@ public class DummyUI : MonoBehaviour
     [SerializeField] private TMP_Text _upgradeRestaurantCostText;
     [SerializeField] private GameObject _restaurantUpgradeInfo;
     [SerializeField] private Button _restaurantUpgradeBtn;
+
+    [Space]
     [SerializeField] private Button _addChefBtn;
+    [SerializeField] private Button _addCustomerBtn;
 
     public TMP_Text GetCoinText() => _coinText;
 
@@ -34,4 +37,6 @@ public class DummyUI : MonoBehaviour
     public Button GetRestaurantUpgradeBtn() => _restaurantUpgradeBtn;
 
     public Button GetAddChefBtn() => _addChefBtn;
+
+    public Button GetAddCustomerBtn() => _addCustomerBtn;
 }

@@ -9,6 +9,7 @@ public sealed class DummyUISystem : IInitializeSystem
     public static IObservable<Unit> OnClickDrinkUpgrade => _onClickDrinkUpgrade;
     public static IObservable<Unit> OnClickRestaurantUpgrade => _onClickRestaurantUpgrade;
     public static IObservable<Unit> OnClickAddChef => _onClickAddChef;
+    public static IObservable<Unit> OnClickAddCustomer => _onClickAddCustomer;
 
     private readonly Contexts _contexts;
     private readonly DummyUI _dummyUI;
@@ -19,6 +20,7 @@ public sealed class DummyUISystem : IInitializeSystem
     private static ISubject<Unit> _onClickDrinkUpgrade = new Subject<Unit>();
     private static ISubject<Unit> _onClickRestaurantUpgrade = new Subject<Unit>();
     private static ISubject<Unit> _onClickAddChef = new Subject<Unit>();
+    private static ISubject<Unit> _onClickAddCustomer = new Subject<Unit>();
 
     public DummyUISystem(
         Contexts contexts,
@@ -53,6 +55,7 @@ public sealed class DummyUISystem : IInitializeSystem
         _dummyUI.GetDrinkUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnDrinkUpgrade()).AddTo(_compositeDisposable);
         _dummyUI.GetRestaurantUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnRestaurantUpgrade()).AddTo(_compositeDisposable);
         _dummyUI.GetAddChefBtn().OnClickAsObservable().Subscribe(_ => OnAddChef()).AddTo(_compositeDisposable);
+        _dummyUI.GetAddCustomerBtn().OnClickAsObservable().Subscribe(_ => OnAddCustomer()).AddTo(_compositeDisposable);
     }
 
     private void HandleDrinkUIUpgrade(int coinAmount)
@@ -139,7 +142,12 @@ public sealed class DummyUISystem : IInitializeSystem
         if (chefCount < frontDeskSpotsCount)
             _onClickAddChef?.OnNext(Unit.Default);
         else
-            Debug.Log("You have max number of chefs!");
+            Debug.Log("You have the max number of chefs for this restaurant!");
+    }
+
+    private void OnAddCustomer()
+    {
+        _onClickAddCustomer?.OnNext(Unit.Default);
     }
 
     private void HideDrinkUpgradeInfo()

@@ -5,7 +5,7 @@ using UnityEngine;
 using UniRx;
 using System;
 
-public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
+public sealed class CreateCustomerSystem : IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly GameObject _customerPrefab;
@@ -38,12 +38,26 @@ public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
 
     public void Initialize()
     {
-        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+        SubscribeToEvents();
 
         Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ => GenerateCustomer()).AddTo(_compositeDisposable);
-
         Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval))).Subscribe(_ =>
         {
+            GenerateCustomer();
+        }).AddTo(_compositeDisposable);
+    }
+
+    private void SubscribeToEvents()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+        DummyUISystem.OnClickAddCustomer.Subscribe(_ => 
+        {
+            if (HasMaxNumberOfCustomers())
+            {
+                Debug.Log("Please wait, you have the max number of customers at the moment!");
+                return;
+            }
+
             GenerateCustomer();
         }).AddTo(_compositeDisposable);
     }
@@ -62,24 +76,16 @@ public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
         }
     }
 
-    public void Execute()
-    {
-        if (Input.GetKeyDown(KeyCode.C))
-            GenerateCustomer();
-    }
-
     private void GenerateCustomer()
     {
-        var restaurantTargetPositions = GetRestaurantTargetPosition();
-        var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
-        if (occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count())
+        if (HasMaxNumberOfCustomers())
             return;
 
         GameObject customerObj = InstantiateCustomerPrefab();
         GameEntity customerEntity = CreateCustomerEntity(customerObj);
 
         var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
-        var behindDeskTargetPos = restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
+        var behindDeskTargetPos = GetRestaurantTargetPosition().GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
 
         customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
         customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
@@ -87,6 +93,15 @@ public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
         emptyFrontDeskEntity.isOccupied = true;
 
         customerObj.Link(customerEntity);
+    }
+
+    private bool HasMaxNumberOfCustomers()
+    {
+        var restaurantTargetPositions = GetRestaurantTargetPosition();
+        var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
+        if (occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count())
+            return true;
+        return false;
     }
 
     private GameObject InstantiateCustomerPrefab()

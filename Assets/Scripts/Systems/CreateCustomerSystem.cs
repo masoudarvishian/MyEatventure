@@ -9,21 +9,19 @@ public sealed class CreateCustomerSystem : IExecuteSystem
     private readonly GameObject _customerPrefab;
     private readonly GameObject _customersParent;
     private readonly Transform _customerSpawnPoint;
-    private readonly RestaurantTargetPositions _restaurantTargetPositions;
     private readonly IGroup<GameEntity> _frontDeskGroup;
 
     public CreateCustomerSystem(
         Contexts contexts, 
         GameObject customerPrefab, 
         GameObject customersParent, 
-        Transform customerSpawnPoint,
-        RestaurantTargetPositions restaurantTargetPositions)
+        Transform customerSpawnPoint)
     {
         _contexts = contexts;
         _customerPrefab = customerPrefab;
         _customersParent = customersParent;
         _customerSpawnPoint = customerSpawnPoint;
-        _restaurantTargetPositions = restaurantTargetPositions;
+       
         _frontDeskGroup = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot);
     }
 
@@ -31,15 +29,16 @@ public sealed class CreateCustomerSystem : IExecuteSystem
     {
         if (Input.GetKeyDown(KeyCode.C))
         {
+            var restaurantTargetPositions = GetRestaurantTargetPosition();
             var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
-            if (occupiedDeskCount >= _restaurantTargetPositions.GetFrontDeskSpots().Count())
+            if (occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count())
                 return;
 
             GameObject customerObj = InstantiateCustomerPrefab();
             GameEntity customerEntity = CreateCustomerEntity(customerObj);
 
             var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
-            var behindDeskTargetPos = _restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
+            var behindDeskTargetPos = restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
             
             customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
             customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
@@ -69,4 +68,7 @@ public sealed class CreateCustomerSystem : IExecuteSystem
         entity.AddVisual(customerObj);
         return entity;
     }
+
+    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
+        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

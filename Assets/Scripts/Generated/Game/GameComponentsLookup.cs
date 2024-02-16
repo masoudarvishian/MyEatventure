@@ -22,14 +22,15 @@ public static class GameComponentsLookup {
     public const int Position = 11;
     public const int PreparingOrder = 12;
     public const int Quantity = 13;
-    public const int ShowCanvas = 14;
-    public const int TargetDeskIndex = 15;
-    public const int TargetDeskPosition = 16;
-    public const int TargetPosition = 17;
-    public const int Visual = 18;
-    public const int Waiting = 19;
+    public const int Restaurant = 14;
+    public const int ShowCanvas = 15;
+    public const int TargetDeskIndex = 16;
+    public const int TargetDeskPosition = 17;
+    public const int TargetPosition = 18;
+    public const int Visual = 19;
+    public const int Waiting = 20;
 
-    public const int TotalComponents = 20;
+    public const int TotalComponents = 21;
 
     public static readonly string[] componentNames = {
         "BuysKitchen",
@@ -46,6 +47,7 @@ public static class GameComponentsLookup {
         "Position",
         "PreparingOrder",
         "Quantity",
+        "Restaurant",
         "ShowCanvas",
         "TargetDeskIndex",
         "TargetDeskPosition",
@@ -69,6 +71,7 @@ public static class GameComponentsLookup {
         typeof(PositionComponent),
         typeof(PreparingOrder),
         typeof(QuantityComponent),
+        typeof(RestaurantComponent),
         typeof(ShowCanvasComponent),
         typeof(TargetDeskIndexComponent),
         typeof(TargetDeskPositionComponent),

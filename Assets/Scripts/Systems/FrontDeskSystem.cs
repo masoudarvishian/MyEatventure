@@ -1,20 +1,19 @@
 ﻿using Entitas;
 using Entitas.Unity;
+using System.Linq;
 
 public sealed class FrontDeskSystem : IInitializeSystem
 {
     private readonly Contexts _contexts;
-    private readonly RestaurantTargetPositions _restaurantTargetPositions;
 
-    public FrontDeskSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions)
+    public FrontDeskSystem(Contexts contexts)
     {
         _contexts = contexts;
-        _restaurantTargetPositions = restaurantTargetPositions;
     }
 
     public void Initialize()
     {
-        var frontDeskSpots = _restaurantTargetPositions.GetFrontDeskSpots();
+        var frontDeskSpots = GetRestaurantTargetPosition().GetFrontDeskSpots();
         for (int i = 0; i < frontDeskSpots.Length; i++)
         {
             var e = _contexts.game.CreateEntity();
@@ -24,4 +23,7 @@ public sealed class FrontDeskSystem : IInitializeSystem
             frontDeskSpots[i].gameObject.Link(e);
         }
     }
+
+    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
+        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

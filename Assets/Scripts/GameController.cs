@@ -1,11 +1,11 @@
 using Entitas;
 using UnityEngine;
+using UniRx;
 
 public class GameController : MonoBehaviour
 {
     [SerializeField] private DummyUI _dummyUI;
     [SerializeField] private GameObject _chefPrefab;
-    [SerializeField] private RestaurantTargetPositions _restaurantTargetPositions;
 
     [SerializeField] private GameObject _customersPrefab;
     [SerializeField] private GameObject _customersParent;
@@ -21,12 +21,11 @@ public class GameController : MonoBehaviour
     {
         _systems = new Feature().Add(
             new RootSystems(
-                Contexts.sharedInstance, 
-                _chefPrefab, 
-                _restaurantTargetPositions,
-                _customersPrefab, 
-                _customersParent, 
-                _customerSpawnPoint, 
+                Contexts.sharedInstance,
+                _chefPrefab,
+                _customersPrefab,
+                _customersParent,
+                _customerSpawnPoint,
                 _customerLeavingPoint,
                 _dummyUI,
                 drinkCoinLevelsPrice,

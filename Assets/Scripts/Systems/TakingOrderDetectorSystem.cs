@@ -7,16 +7,16 @@ using System;
 
 public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 {
-    private readonly RestaurantTargetPositions _restaurantTargetPositions;
     private readonly IGroup<GameEntity> _busyKitchenGroup;
+    private readonly Contexts _contexts;
     private IGroup<GameEntity> _waitingCustomersGroup;
     private CompositeDisposable _compositeDisposable = new();
 
-    public TakingOrderDetectorSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
+    public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
     {
         _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.Customer);
-        _restaurantTargetPositions = restaurantTargetPositions;
         _busyKitchenGroup = contexts.game.GetGroup(GameMatcher.BuysKitchen);
+        _contexts = contexts;
     }
 
     ~TakingOrderDetectorSystem()
@@ -32,6 +32,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     private void TryToAddCooldownIfChefHasReachedToCustomer(GameEntity chefEntity)
     {
+        var restaurantTargetPositions = GetRestaurantTargetPosition();
         foreach (var customerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
         {
             if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value) && customerEntity.isPreparingOrder)
@@ -39,7 +40,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
                 var cooldownDuration = 0.1f;
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
                 {
-                    chefEntity.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
+                    chefEntity.AddTargetPosition(restaurantTargetPositions.GetFirstKitchenSpot().position);
                 }).AddTo(_compositeDisposable);
 
                 continue;
@@ -50,7 +51,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
                 var cooldownDuration = 1f;
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
                 {
-                    chefEntity.AddTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
+                    chefEntity.AddTargetPosition(restaurantTargetPositions.GetFirstKitchenSpot().position);
                 }).AddTo(_compositeDisposable);
 
                 customerEntity.isPreparingOrder = true;
@@ -66,4 +67,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
         context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
+
+    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
+        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

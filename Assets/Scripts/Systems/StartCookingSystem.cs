@@ -8,14 +8,12 @@ using UnityEngine;
 internal class StartCookingSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
-    private readonly RestaurantTargetPositions _restaurantTargetPositions;
     private readonly IGroup<GameEntity> _waitingCustomerGroup;
     private CompositeDisposable _compositeDisposable = new();
 
-    public StartCookingSystem(Contexts contexts, RestaurantTargetPositions restaurantTargetPositions) : base(contexts.game)
+    public StartCookingSystem(Contexts contexts) : base(contexts.game)
     {
         _contexts = contexts;
-        _restaurantTargetPositions = restaurantTargetPositions;
         _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
     }
 
@@ -28,7 +26,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
     {
         foreach (var chefEntity in entities)
         {
-            if (HasReachedToTargetPosition(chefEntity, _restaurantTargetPositions.GetFirstKitchenSpot().position))
+            if (HasReachedToTargetPosition(chefEntity, GetRestaurantTargetPosition().GetFirstKitchenSpot().position))
             {
                 var busyKitchenEntity = _contexts.game.CreateEntity();
                 busyKitchenEntity.isBuysKitchen = true;
@@ -50,4 +48,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 
     private bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
+
+    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
+        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

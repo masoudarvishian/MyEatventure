@@ -41,7 +41,6 @@ public sealed class RepositorySystem : IInitializeSystem
         DeliveryOrderSystem.OnOrderIsDelivered
                     .Subscribe(_ => UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].coin))
                     .AddTo(_compositeDisposable);
-
         DummyUISystem.OnClickUpgrade.Subscribe(_ => OnClickUpgrade()).AddTo(_compositeDisposable);
     }
 
@@ -67,6 +66,7 @@ public sealed class RepositorySystem : IInitializeSystem
         var e = _contexts.game.CreateEntity();
         e.AddCoin(InitialCoinValue);
         e.AddCurrentDrinkLevel(0);
+        e.AddCurrentRestaurantLevel(0);
         e.AddVisual(_dummyUI.gameObject);
         _dummyUI.GetCoinText().text = InitialCoinValue.ToString();
         _dummyUI.gameObject.Link(e);

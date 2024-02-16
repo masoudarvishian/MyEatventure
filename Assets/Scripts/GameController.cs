@@ -13,6 +13,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private Transform _customerLeavingPoint;
 
     [SerializeField] private DrinkCoinLevelsPriceSO drinkCoinLevelsPrice;
+    [SerializeField] private RestaurantLevelsCostSO restaurantLevelsCost;
 
     private Systems _systems;
 
@@ -28,7 +29,8 @@ public class GameController : MonoBehaviour
                 _customerSpawnPoint, 
                 _customerLeavingPoint,
                 _dummyUI,
-                drinkCoinLevelsPrice)
+                drinkCoinLevelsPrice,
+                restaurantLevelsCost)
         );
         _systems.Initialize();
     }

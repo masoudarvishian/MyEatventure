@@ -11,7 +11,8 @@ public class RootSystems : Feature
         Transform customerSpawnPoint, 
         Transform customerLeavingPoint,
         DummyUI dummyUI, 
-        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice)
+        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice,
+        RestaurantLevelsCostSO restaurantLevelsCost)
     {
         Add(new FrontDeskSystem(contexts, restaurantTargetPositions));
         Add(new CreateChefSystem(contexts, chefPrefab));
@@ -24,6 +25,6 @@ public class RootSystems : Feature
         Add(new CustomerUIPopupSystem(contexts));
         Add(new MoveCustomerSystem(contexts, customerLeavingPoint));
         Add(new AssignChefCustomerSystem(contexts));
-        Add(new DummyUISystem(contexts, dummyUI, drinkCoinLevelsPrice));
+        Add(new DummyUISystem(contexts, dummyUI, drinkCoinLevelsPrice, restaurantLevelsCost));
     }
 }

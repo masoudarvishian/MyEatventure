@@ -10,17 +10,20 @@ public sealed class DummyUISystem : IInitializeSystem
     private readonly Contexts _contexts;
     private readonly DummyUI _dummyUI;
     private readonly DrinkCoinLevelsPriceSO _drinkCoinLevelsPrice;
+    private readonly RestaurantLevelsCostSO _restaurantLevelsCost;
     private CompositeDisposable _compositeDisposable = new();
     private static ISubject<Unit> _onClickUpgrade = new Subject<Unit>();
 
     public DummyUISystem(
-        Contexts contexts, 
-        DummyUI dummyUI, 
-        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice)
+        Contexts contexts,
+        DummyUI dummyUI,
+        DrinkCoinLevelsPriceSO drinkCoinLevelsPrice,
+        RestaurantLevelsCostSO restaurantLevelsCost)
     {
         _contexts = contexts;
         _dummyUI = dummyUI;
         _drinkCoinLevelsPrice = drinkCoinLevelsPrice;
+        _restaurantLevelsCost = restaurantLevelsCost;
     }
 
     ~DummyUISystem()
@@ -35,27 +38,45 @@ public sealed class DummyUISystem : IInitializeSystem
 
     private void SubscribeToEvents()
     {
-        RepositorySystem.OnCoinChanged.Subscribe(OnCoinAmountChanged).AddTo(_compositeDisposable);
-        _dummyUI.GetUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnUpgrade()).AddTo(_compositeDisposable);
+        RepositorySystem.OnCoinChanged.Subscribe(coinAmount =>
+        {
+            UpdateCoinUIWithValue(coinAmount);
+            HandleDrinkUIUpgrade(coinAmount);
+            HandleRestaurantUIUpgrade(coinAmount);
+        }).AddTo(_compositeDisposable);
+        _dummyUI.GetDrinkUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnUpgrade()).AddTo(_compositeDisposable);
     }
 
-    private void OnCoinAmountChanged(int coinAmount)
+    private void HandleDrinkUIUpgrade(int coinAmount)
     {
-        UpdateCoinUIWithValue(coinAmount);
-
         var currentDrinkCoinLevel = GetRepositoryEntity().currentDrinkLevel.value;
         if (IsAtEndOfDrinkLevel(currentDrinkCoinLevel))
             return;
-
-        HandleUpgradeInfo(coinAmount, currentDrinkCoinLevel);
+        HandleDrinkUpgradeInfo(coinAmount, currentDrinkCoinLevel);
     }
 
-    private void HandleUpgradeInfo(int coinAmount, int currentDrinkCoinLevel)
+    private void HandleRestaurantUIUpgrade(int coinAmount)
+    {
+        var currentRestaurantLevel = GetRepositoryEntity().currentRestaurantLevel.value;
+        if (IsAtEndOfRestaurantLevel(currentRestaurantLevel))
+            return;
+        HandleRestaurantUpgradeInfo(coinAmount, currentRestaurantLevel);
+    }
+
+    private void HandleDrinkUpgradeInfo(int coinAmount, int currentDrinkCoinLevel)
     {
         if (IsEligibleToUpgradeDrink(coinAmount, currentDrinkCoinLevel))
-            ShowUpgradeInfo(currentDrinkCoinLevel);
+            ShowDrinkUpgradeInfo(currentDrinkCoinLevel);
         else
-            HideUpgradeInfo();
+            HideDrinkUpgradeInfo();
+    }
+
+    private void HandleRestaurantUpgradeInfo(int coinAmount, int currentRestaurantLevel)
+    {
+        if (IsEligibleToUpgradeRestaurant(coinAmount, currentRestaurantLevel))
+            ShowRestaurantUpgradeInfo(currentRestaurantLevel);
+        else
+            HideRestaurantUpgradeInfo();
     }
 
     private void UpdateCoinUIWithValue(int value)
@@ -68,24 +89,41 @@ public sealed class DummyUISystem : IInitializeSystem
     private bool IsAtEndOfDrinkLevel(int currentDrinkCoinLevel) =>
         currentDrinkCoinLevel == _drinkCoinLevelsPrice.coinLevels.Length - 1;
 
+    private bool IsAtEndOfRestaurantLevel(int currentRestaurantLevel) =>
+        currentRestaurantLevel == _restaurantLevelsCost.restaurantLevels.Length - 1;
+
     private bool IsEligibleToUpgradeDrink(int coinAmount, int currentDrinkCoinLevel) =>
        coinAmount >= _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].upgradeCost;
 
-    private void ShowUpgradeInfo(int currentDrinkCoinLevel)
+    private bool IsEligibleToUpgradeRestaurant(int coinAmount, int currentRestaurantLevel) =>
+        coinAmount >= _restaurantLevelsCost.restaurantLevels[currentRestaurantLevel + 1].upgradeCost;
+
+    private void ShowDrinkUpgradeInfo(int currentDrinkCoinLevel)
     {
         _dummyUI.GetUpgradeDrinkCostText().text = _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].upgradeCost.ToString();
         _dummyUI.GetDrinkPriceText().text = _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].coin.ToString();
-        _dummyUI.GetUpgradeInfo().SetActive(true);
+        _dummyUI.GetDrinkUpgradeInfo().SetActive(true);
+    }
+
+    private void ShowRestaurantUpgradeInfo(int currentRestaurantLevel)
+    {
+        _dummyUI.GetUpgradeRestaurantCostText().text = _restaurantLevelsCost.restaurantLevels[currentRestaurantLevel + 1].upgradeCost.ToString();
+        _dummyUI.GetRestaurantUpgradeInfo().SetActive(true);
     }
 
     private void OnUpgrade()
     {
-        HideUpgradeInfo();
+        HideDrinkUpgradeInfo();
         _onClickUpgrade?.OnNext(Unit.Default);
     }
 
-    private void HideUpgradeInfo()
+    private void HideDrinkUpgradeInfo()
     {
-        _dummyUI.GetUpgradeInfo().SetActive(false);
+        _dummyUI.GetDrinkUpgradeInfo().SetActive(false);
+    }
+
+    private void HideRestaurantUpgradeInfo()
+    {
+        _dummyUI.GetRestaurantUpgradeInfo().SetActive(false);
     }
 }

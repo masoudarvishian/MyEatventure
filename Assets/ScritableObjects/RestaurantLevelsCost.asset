@@ -16,4 +16,4 @@ MonoBehaviour:
   - prefab: {fileID: 2190107922296262728, guid: b43960631eccd184ab24c698e2a72a22, type: 3}
     upgradeCost: 0
   - prefab: {fileID: 2190107922296262728, guid: 77bb201900ad1fe459cb6b1522b297cc, type: 3}
-    upgradeCost: 200
+    upgradeCost: 150

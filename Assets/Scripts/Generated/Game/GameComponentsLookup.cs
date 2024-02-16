@@ -12,29 +12,31 @@ public static class GameComponentsLookup {
     public const int Chef = 1;
     public const int Coin = 2;
     public const int CurrentDrinkLevel = 3;
-    public const int Customer = 4;
-    public const int CustomerIndex = 5;
-    public const int Delivered = 6;
-    public const int FrontDeskSpot = 7;
-    public const int Index = 8;
-    public const int Occupied = 9;
-    public const int Position = 10;
-    public const int PreparingOrder = 11;
-    public const int Quantity = 12;
-    public const int ShowCanvas = 13;
-    public const int TargetDeskIndex = 14;
-    public const int TargetDeskPosition = 15;
-    public const int TargetPosition = 16;
-    public const int Visual = 17;
-    public const int Waiting = 18;
+    public const int CurrentRestaurantLevel = 4;
+    public const int Customer = 5;
+    public const int CustomerIndex = 6;
+    public const int Delivered = 7;
+    public const int FrontDeskSpot = 8;
+    public const int Index = 9;
+    public const int Occupied = 10;
+    public const int Position = 11;
+    public const int PreparingOrder = 12;
+    public const int Quantity = 13;
+    public const int ShowCanvas = 14;
+    public const int TargetDeskIndex = 15;
+    public const int TargetDeskPosition = 16;
+    public const int TargetPosition = 17;
+    public const int Visual = 18;
+    public const int Waiting = 19;
 
-    public const int TotalComponents = 19;
+    public const int TotalComponents = 20;
 
     public static readonly string[] componentNames = {
         "BuysKitchen",
         "Chef",
         "Coin",
         "CurrentDrinkLevel",
+        "CurrentRestaurantLevel",
         "Customer",
         "CustomerIndex",
         "Delivered",
@@ -57,6 +59,7 @@ public static class GameComponentsLookup {
         typeof(ChefComponent),
         typeof(CoinComponent),
         typeof(CurrentDrinkLevelComponent),
+        typeof(CurrentRestaurantLevelComponent),
         typeof(CustomerComponent),
         typeof(CustomerIndexComponent),
         typeof(DeliveredComponent),

@@ -9,12 +9,12 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
 {
     private readonly IGroup<GameEntity> _busyKitchenGroup;
     private readonly Contexts _contexts;
-    private IGroup<GameEntity> _waitingCustomersGroup;
+    private IGroup<GameEntity> _customersGroup;
     private CompositeDisposable _compositeDisposable = new();
 
     public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
     {
-        _waitingCustomersGroup = contexts.game.GetGroup(GameMatcher.Customer);
+        _customersGroup = contexts.game.GetGroup(GameMatcher.Customer);
         _busyKitchenGroup = contexts.game.GetGroup(GameMatcher.BuysKitchen);
         _contexts = contexts;
     }
@@ -33,7 +33,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>
     private void TryToAddCooldownIfChefHasReachedToCustomer(GameEntity chefEntity)
     {
         var restaurantTargetPositions = GetRestaurantTargetPosition();
-        foreach (var customerEntity in _waitingCustomersGroup.GetEntities().Where(x => x.quantity.value > 0))
+        foreach (var customerEntity in _customersGroup.GetEntities().Where(x => x.quantity.value > 0))
         {
             if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value) && customerEntity.isPreparingOrder)
             {

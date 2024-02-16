@@ -34,7 +34,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
                 var cooldownDuration = 2f;
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
                     var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
-                    chefEntity.AddTargetPosition(chefCustomerEntity.targetDeskPosition.value);
+                    chefEntity.ReplaceTargetPosition(chefCustomerEntity.targetDeskPosition.value);
                     busyKitchenEntity.Destroy();
                 }).AddTo(_compositeDisposable);
             }

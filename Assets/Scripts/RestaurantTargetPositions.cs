@@ -10,6 +10,8 @@ public class RestaurantTargetPositions : MonoBehaviour
 
     public Transform GetFirstKitchenSpot() => kitchenSpots[0];
 
+    public Transform[] GetKitchenSpots() => kitchenSpots;
+
     public Transform[] GetFrontDeskSpots() => frontDeskSpots;
 
     public Transform[] GetBehindDeskSpots() => behindDeskSpots;

@@ -1,6 +1,7 @@
 ﻿using Entitas;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public sealed class AssignChefCustomerSystem : IExecuteSystem
 {
@@ -20,20 +21,36 @@ public sealed class AssignChefCustomerSystem : IExecuteSystem
         for (int i = 0; i < _waitingCustomersQueue.Count; i++)
         {
             var waitingCustomerEntity = _waitingCustomersQueue.ElementAt(i);
-            foreach (var freeChefEntity in _freeChefGroup.GetEntities())
-            {
-                if (_waitingCustomersQueue.Count == 0)
-                    break;
+            var freeChefEntity = GetClosestChef(waitingCustomerEntity.position.value, _freeChefGroup.GetEntities());
 
-                freeChefEntity.AddCustomerIndex(waitingCustomerEntity.creationIndex);
-                freeChefEntity.AddTargetPosition(waitingCustomerEntity.targetDeskPosition.value);
-                _waitingCustomersQueue.Dequeue();
-            }
+            if (_waitingCustomersQueue.Count == 0 || freeChefEntity == null)
+                break;
+
+            freeChefEntity.AddCustomerIndex(waitingCustomerEntity.creationIndex);
+            freeChefEntity.ReplaceTargetPosition(waitingCustomerEntity.targetDeskPosition.value);
+            _waitingCustomersQueue.Dequeue();
         }
     }
 
     private void OnWaitingCustomerAdded(IGroup<GameEntity> group, GameEntity entity, int index, IComponent component)
     {
         _waitingCustomersQueue.Enqueue(entity);
+    }
+
+    private GameEntity GetClosestChef(Vector3 customerPosition, GameEntity[] chefEntities)
+    {
+        GameEntity closestChef = null;
+        float minDist = Mathf.Infinity;
+        Vector3 currentPos = customerPosition;
+        foreach (GameEntity e in chefEntities)
+        {
+            float dist = Vector3.Distance(e.position.value, currentPos);
+            if (dist < minDist)
+            {
+                closestChef = e;
+                minDist = dist;
+            }
+        }
+        return closestChef;
     }
 }

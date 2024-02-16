@@ -6,7 +6,6 @@ using UnityEngine;
 public sealed class MoveCustomerSystem : IExecuteSystem
 {
     private IGroup<GameEntity> _customerGroup;
-    private IGroup<GameEntity> _chefGroup;
     private float _speed = 3.0f;
     private readonly Contexts _contexts;
     private readonly Transform _customerLeavingPoint;
@@ -16,7 +15,6 @@ public sealed class MoveCustomerSystem : IExecuteSystem
         _contexts = contexts;
         _customerLeavingPoint = customerLeavingPoint;
         _customerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
-        _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
     }
 
     public void Execute()

@@ -5,14 +5,16 @@ using UniRx;
 
 public sealed class DummyUISystem : IInitializeSystem
 {
-    public static IObservable<Unit> OnClickUpgrade => _onClickUpgrade;
+    public static IObservable<Unit> OnClickDrinkUpgrade => _onClickDrinkUpgrade;
+    public static IObservable<Unit> OnClickRestaurantUpgrade => _onClickRestaurantUpgrade;
 
     private readonly Contexts _contexts;
     private readonly DummyUI _dummyUI;
     private readonly DrinkCoinLevelsPriceSO _drinkCoinLevelsPrice;
     private readonly RestaurantLevelsCostSO _restaurantLevelsCost;
     private CompositeDisposable _compositeDisposable = new();
-    private static ISubject<Unit> _onClickUpgrade = new Subject<Unit>();
+    private static ISubject<Unit> _onClickDrinkUpgrade = new Subject<Unit>();
+    private static ISubject<Unit> _onClickRestaurantUpgrade = new Subject<Unit>();
 
     public DummyUISystem(
         Contexts contexts,
@@ -44,7 +46,8 @@ public sealed class DummyUISystem : IInitializeSystem
             HandleDrinkUIUpgrade(coinAmount);
             HandleRestaurantUIUpgrade(coinAmount);
         }).AddTo(_compositeDisposable);
-        _dummyUI.GetDrinkUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnUpgrade()).AddTo(_compositeDisposable);
+        _dummyUI.GetDrinkUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnDrinkUpgrade()).AddTo(_compositeDisposable);
+        _dummyUI.GetRestaurantUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnRestaurantUpgrade()).AddTo(_compositeDisposable);
     }
 
     private void HandleDrinkUIUpgrade(int coinAmount)
@@ -57,7 +60,7 @@ public sealed class DummyUISystem : IInitializeSystem
 
     private void HandleRestaurantUIUpgrade(int coinAmount)
     {
-        var currentRestaurantLevel = GetRepositoryEntity().currentRestaurantLevel.value;
+        var currentRestaurantLevel = RepositorySystem.CurrentRestaurantLevel;
         if (IsAtEndOfRestaurantLevel(currentRestaurantLevel))
             return;
         HandleRestaurantUpgradeInfo(coinAmount, currentRestaurantLevel);
@@ -111,10 +114,16 @@ public sealed class DummyUISystem : IInitializeSystem
         _dummyUI.GetRestaurantUpgradeInfo().SetActive(true);
     }
 
-    private void OnUpgrade()
+    private void OnDrinkUpgrade()
     {
         HideDrinkUpgradeInfo();
-        _onClickUpgrade?.OnNext(Unit.Default);
+        _onClickDrinkUpgrade?.OnNext(Unit.Default);
+    }
+
+    private void OnRestaurantUpgrade()
+    {
+        HideRestaurantUpgradeInfo();
+        _onClickRestaurantUpgrade?.OnNext(Unit.Default);
     }
 
     private void HideDrinkUpgradeInfo()

@@ -1,6 +1,6 @@
 using Entitas;
-using UnityEngine;
 using UniRx;
+using UnityEngine;
 
 public class GameController : MonoBehaviour
 {

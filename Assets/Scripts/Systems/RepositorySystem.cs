@@ -6,10 +6,12 @@ using UniRx;
 
 public sealed class RepositorySystem : IInitializeSystem
 {
+    public static int CurrentRestaurantLevel { get; private set; }
     public static IObservable<int> OnCoinChanged => _onCoinChanged;
 
     private readonly Contexts _contexts;
     private readonly DrinkCoinLevelsPriceSO _drinkCoinLevelsPrice;
+    private readonly RestaurantLevelsCostSO _restaurantLevelsCost;
     private readonly DummyUI _dummyUI;
     private const int InitialCoinValue = 10;
     private static Subject<int> _onCoinChanged = new Subject<int>();
@@ -18,10 +20,12 @@ public sealed class RepositorySystem : IInitializeSystem
     public RepositorySystem(
         Contexts contexts,
         DrinkCoinLevelsPriceSO drinkCoinLevelsPrice,
+        RestaurantLevelsCostSO restaurantLevelsCost,
         DummyUI dummyUI)
     {
         _contexts = contexts;
         _drinkCoinLevelsPrice = drinkCoinLevelsPrice;
+        _restaurantLevelsCost = restaurantLevelsCost;
         _dummyUI = dummyUI;
     }
 
@@ -41,7 +45,8 @@ public sealed class RepositorySystem : IInitializeSystem
         DeliveryOrderSystem.OnOrderIsDelivered
                     .Subscribe(_ => UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].coin))
                     .AddTo(_compositeDisposable);
-        DummyUISystem.OnClickUpgrade.Subscribe(_ => OnClickUpgrade()).AddTo(_compositeDisposable);
+        DummyUISystem.OnClickDrinkUpgrade.Subscribe(_ => OnClickDrinkUpgrade()).AddTo(_compositeDisposable);
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
     }
 
     private void UpdateEntityWithValue(int value)
@@ -55,10 +60,16 @@ public sealed class RepositorySystem : IInitializeSystem
 
     private GameEntity GetRepositoryEntity() => _contexts.game.GetGroup(GameMatcher.Coin).GetEntities().First();
 
-    private void OnClickUpgrade()
+    private void OnClickDrinkUpgrade()
     {
         GetRepositoryEntity().currentDrinkLevel.value++;
         UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].upgradeCost * -1);
+    }
+
+    private void OnClickRestaurantUpgrade()
+    {
+        CurrentRestaurantLevel++;
+        UpdateEntityWithValue(_restaurantLevelsCost.restaurantLevels[CurrentRestaurantLevel].upgradeCost * -1);
     }
 
     private void CreateAndLinkEntity()
@@ -66,7 +77,6 @@ public sealed class RepositorySystem : IInitializeSystem
         var e = _contexts.game.CreateEntity();
         e.AddCoin(InitialCoinValue);
         e.AddCurrentDrinkLevel(0);
-        e.AddCurrentRestaurantLevel(0);
         e.AddVisual(_dummyUI.gameObject);
         _dummyUI.GetCoinText().text = InitialCoinValue.ToString();
         _dummyUI.gameObject.Link(e);

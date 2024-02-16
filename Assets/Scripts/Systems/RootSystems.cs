@@ -13,7 +13,7 @@ public class RootSystems : Feature
         DrinkCoinLevelsPriceSO drinkCoinLevelsPrice,
         RestaurantLevelsCostSO restaurantLevelsCost)
     {
-        Add(new RepositorySystem(contexts, drinkCoinLevelsPrice, dummyUI));
+        Add(new RepositorySystem(contexts, drinkCoinLevelsPrice, restaurantLevelsCost, dummyUI));
         Add(new CreateRestaurantSystem(contexts, restaurantLevelsCost));
         Add(new FrontDeskSystem(contexts));
         Add(new CreateChefSystem(contexts, chefPrefab));

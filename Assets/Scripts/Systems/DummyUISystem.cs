@@ -2,19 +2,23 @@
 using System;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 
 public sealed class DummyUISystem : IInitializeSystem
 {
     public static IObservable<Unit> OnClickDrinkUpgrade => _onClickDrinkUpgrade;
     public static IObservable<Unit> OnClickRestaurantUpgrade => _onClickRestaurantUpgrade;
+    public static IObservable<Unit> OnClickAddChef => _onClickAddChef;
 
     private readonly Contexts _contexts;
     private readonly DummyUI _dummyUI;
     private readonly DrinkCoinLevelsPriceSO _drinkCoinLevelsPrice;
     private readonly RestaurantLevelsCostSO _restaurantLevelsCost;
     private CompositeDisposable _compositeDisposable = new();
+
     private static ISubject<Unit> _onClickDrinkUpgrade = new Subject<Unit>();
     private static ISubject<Unit> _onClickRestaurantUpgrade = new Subject<Unit>();
+    private static ISubject<Unit> _onClickAddChef = new Subject<Unit>();
 
     public DummyUISystem(
         Contexts contexts,
@@ -48,6 +52,7 @@ public sealed class DummyUISystem : IInitializeSystem
         }).AddTo(_compositeDisposable);
         _dummyUI.GetDrinkUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnDrinkUpgrade()).AddTo(_compositeDisposable);
         _dummyUI.GetRestaurantUpgradeBtn().OnClickAsObservable().Subscribe(_ => OnRestaurantUpgrade()).AddTo(_compositeDisposable);
+        _dummyUI.GetAddChefBtn().OnClickAsObservable().Subscribe(_ => OnAddChef()).AddTo(_compositeDisposable);
     }
 
     private void HandleDrinkUIUpgrade(int coinAmount)
@@ -126,6 +131,17 @@ public sealed class DummyUISystem : IInitializeSystem
         _onClickRestaurantUpgrade?.OnNext(Unit.Default);
     }
 
+    private void OnAddChef()
+    {
+        var frontDeskSpotsCount = GetRestaurantTargetPosition().GetFrontDeskSpots().Count();
+        var chefCount = _contexts.game.GetGroup(GameMatcher.Chef).GetEntities().Count();
+
+        if (chefCount < frontDeskSpotsCount)
+            _onClickAddChef?.OnNext(Unit.Default);
+        else
+            Debug.Log("You have max number of chefs!");
+    }
+
     private void HideDrinkUpgradeInfo()
     {
         _dummyUI.GetDrinkUpgradeInfo().SetActive(false);
@@ -135,4 +151,7 @@ public sealed class DummyUISystem : IInitializeSystem
     {
         _dummyUI.GetRestaurantUpgradeInfo().SetActive(false);
     }
+
+    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
+        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

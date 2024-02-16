@@ -14,6 +14,9 @@ public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
     private readonly IGroup<GameEntity> _frontDeskGroup;
     private readonly CompositeDisposable _compositeDisposable = new();
 
+    private int minGenerateInterval = 5;
+    private int maxGenerateInterval = 10;
+
     public CreateCustomerSystem(
         Contexts contexts, 
         GameObject customerPrefab, 
@@ -35,12 +38,20 @@ public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
 
     public void Initialize()
     {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+
         Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ => GenerateCustomer()).AddTo(_compositeDisposable);
 
-        Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(5, 10))).Subscribe(_ =>
+        Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval))).Subscribe(_ =>
         {
             GenerateCustomer();
         }).AddTo(_compositeDisposable);
+    }
+
+    private void OnClickRestaurantUpgrade()
+    {
+        minGenerateInterval = 2;
+        maxGenerateInterval = 5;
     }
 
     public void Execute()

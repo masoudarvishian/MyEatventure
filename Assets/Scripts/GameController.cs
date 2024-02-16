@@ -1,5 +1,4 @@
 using Entitas;
-using UniRx;
 using UnityEngine;
 
 public class GameController : MonoBehaviour

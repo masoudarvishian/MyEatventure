@@ -1,11 +1,13 @@
 ﻿using Entitas;
 using Entitas.Unity;
+using UniRx;
 using UnityEngine;
 
-public sealed class CreateChefSystem : IInitializeSystem, IExecuteSystem
+public sealed class CreateChefSystem : IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly GameObject _chefPrefab;
+    private readonly CompositeDisposable _compositeDisposable = new();
 
     public CreateChefSystem(Contexts contexts, GameObject chefPrefab)
     {
@@ -13,17 +15,21 @@ public sealed class CreateChefSystem : IInitializeSystem, IExecuteSystem
         _chefPrefab = chefPrefab;
     }
 
+    ~CreateChefSystem()
+    {
+        _compositeDisposable.Dispose();
+    }
+
     public void Initialize()
     {
+        DummyUISystem.OnClickAddChef.Subscribe(_ => OnClickAddChef()).AddTo(_compositeDisposable);
+
         InstantiateAndLinkChef();
     }
 
-    public void Execute()
+    private void OnClickAddChef()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            InstantiateAndLinkChef();
-        }
+        InstantiateAndLinkChef();
     }
 
     private void InstantiateAndLinkChef()

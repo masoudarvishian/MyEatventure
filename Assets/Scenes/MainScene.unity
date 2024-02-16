@@ -1440,6 +1440,7 @@ MonoBehaviour:
   _upgradeRestaurantCostText: {fileID: 238451850}
   _restaurantUpgradeInfo: {fileID: 490309505}
   _restaurantUpgradeBtn: {fileID: 589581161}
+  _addChefBtn: {fileID: 1553742911}
 --- !u!1 &1070829776
 GameObject:
   m_ObjectHideFlags: 0

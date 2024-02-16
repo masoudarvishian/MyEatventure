@@ -2,14 +2,17 @@
 using Entitas.Unity;
 using System.Linq;
 using UnityEngine;
+using UniRx;
+using System;
 
-public sealed class CreateCustomerSystem : IExecuteSystem
+public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly GameObject _customerPrefab;
     private readonly GameObject _customersParent;
     private readonly Transform _customerSpawnPoint;
     private readonly IGroup<GameEntity> _frontDeskGroup;
+    private readonly CompositeDisposable _compositeDisposable = new();
 
     public CreateCustomerSystem(
         Contexts contexts, 
@@ -25,28 +28,47 @@ public sealed class CreateCustomerSystem : IExecuteSystem
         _frontDeskGroup = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot);
     }
 
+    ~CreateCustomerSystem()
+    {
+        _compositeDisposable.Dispose();
+    }
+
+    public void Initialize()
+    {
+        Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ => GenerateCustomer()).AddTo(_compositeDisposable);
+
+        Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(5, 10))).Subscribe(_ =>
+        {
+            GenerateCustomer();
+        }).AddTo(_compositeDisposable);
+    }
+
     public void Execute()
     {
         if (Input.GetKeyDown(KeyCode.C))
-        {
-            var restaurantTargetPositions = GetRestaurantTargetPosition();
-            var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
-            if (occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count())
-                return;
+            GenerateCustomer();
 
-            GameObject customerObj = InstantiateCustomerPrefab();
-            GameEntity customerEntity = CreateCustomerEntity(customerObj);
+    }
 
-            var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
-            var behindDeskTargetPos = restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
-            
-            customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
-            customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
-            customerEntity.AddTargetDeskIndex(emptyFrontDeskEntity.index.value);
-            emptyFrontDeskEntity.isOccupied = true;
+    private void GenerateCustomer()
+    {
+        var restaurantTargetPositions = GetRestaurantTargetPosition();
+        var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
+        if (occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count())
+            return;
 
-            customerObj.Link(customerEntity);
-        }
+        GameObject customerObj = InstantiateCustomerPrefab();
+        GameEntity customerEntity = CreateCustomerEntity(customerObj);
+
+        var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
+        var behindDeskTargetPos = restaurantTargetPositions.GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
+
+        customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
+        customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
+        customerEntity.AddTargetDeskIndex(emptyFrontDeskEntity.index.value);
+        emptyFrontDeskEntity.isOccupied = true;
+
+        customerObj.Link(customerEntity);
     }
 
     private GameObject InstantiateCustomerPrefab()
@@ -64,7 +86,7 @@ public sealed class CreateCustomerSystem : IExecuteSystem
         entity.AddPosition(customerObj.transform.position);
         entity.isPreparingOrder = false;
         entity.AddDelivered(false);
-        entity.AddQuantity(Random.Range(1, 3));
+        entity.AddQuantity(UnityEngine.Random.Range(1, 3));
         entity.AddVisual(customerObj);
         return entity;
     }

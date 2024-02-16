@@ -8,13 +8,13 @@ using UnityEngine;
 internal class StartCookingSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
-    private readonly IGroup<GameEntity> _waitingCustomerGroup;
+    private readonly IGroup<GameEntity> _customerGroup;
     private CompositeDisposable _compositeDisposable = new();
 
     public StartCookingSystem(Contexts contexts) : base(contexts.game)
     {
         _contexts = contexts;
-        _waitingCustomerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
+        _customerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
     }
 
     ~StartCookingSystem()
@@ -33,7 +33,9 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 
                 var cooldownDuration = 2f;
                 Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
-                    var chefCustomerEntity = _waitingCustomerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
+                    if (!chefEntity.hasCustomerIndex || _customerGroup.GetEntities().Length == 0)
+                        return;
+                    var chefCustomerEntity = _customerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
                     chefEntity.ReplaceTargetPosition(chefCustomerEntity.targetDeskPosition.value);
                     busyKitchenEntity.Destroy();
                 }).AddTo(_compositeDisposable);

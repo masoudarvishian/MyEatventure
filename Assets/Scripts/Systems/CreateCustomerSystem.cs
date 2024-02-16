@@ -52,13 +52,20 @@ public sealed class CreateCustomerSystem : IExecuteSystem, IInitializeSystem
     {
         minGenerateInterval = 2;
         maxGenerateInterval = 5;
+
+        foreach(var e in _contexts.game.GetGroup(GameMatcher.Customer).GetEntities())
+        {
+            var obj = e.visual.gameObject;
+            obj.Unlink();
+            e.Destroy();
+            GameObject.Destroy(obj);
+        }
     }
 
     public void Execute()
     {
         if (Input.GetKeyDown(KeyCode.C))
             GenerateCustomer();
-
     }
 
     private void GenerateCustomer()

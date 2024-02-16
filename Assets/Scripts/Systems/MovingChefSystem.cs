@@ -1,16 +1,39 @@
 ﻿using Entitas;
 using UnityEngine;
+using UniRx;
 
-internal class MovingChefSystem : IExecuteSystem
+internal class MovingChefSystem : IExecuteSystem, IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _chefWithTargetPositionGroup;
+    private readonly CompositeDisposable _compositeDisposable = new();
     private float _speed = 4.0f;
 
     public MovingChefSystem(Contexts contexts)
     {
         _contexts = contexts;
         _chefWithTargetPositionGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).AnyOf(GameMatcher.TargetPosition));
+    }
+
+    ~MovingChefSystem()
+    {
+        _compositeDisposable.Dispose();
+    }
+
+    public void Initialize()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+    }
+
+    private void OnClickRestaurantUpgrade()
+    {
+        foreach (var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
+        {
+            if (chefEntity.hasTargetPosition)
+                chefEntity.RemoveTargetPosition();
+            if (chefEntity.hasCustomerIndex)
+                chefEntity.RemoveCustomerIndex();
+        }
     }
 
     public void Execute()

@@ -59,7 +59,7 @@ public sealed class RepositorySystem : IInitializeSystem
     private void OnClickUpgrade()
     {
         GetRepositoryEntity().currentDrinkLevel.value++;
-        UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].upgradePrice * -1);
+        UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].upgradeCost * -1);
     }
 
     private void CreateAndLinkEntity()

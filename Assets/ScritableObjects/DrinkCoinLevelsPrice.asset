@@ -13,18 +13,13 @@ MonoBehaviour:
   m_Name: DrinkCoinLevelsPrice
   m_EditorClassIdentifier: 
   coinLevels:
-  - level: 1
-    coin: 10
-    upgradePrice: 20
-  - level: 2
-    coin: 20
-    upgradePrice: 40
-  - level: 3
-    coin: 30
-    upgradePrice: 60
-  - level: 4
-    coin: 40
-    upgradePrice: 80
-  - level: 5
-    coin: 50
-    upgradePrice: 100
+  - coin: 10
+    upgradeCost: 20
+  - coin: 20
+    upgradeCost: 40
+  - coin: 30
+    upgradeCost: 60
+  - coin: 40
+    upgradeCost: 80
+  - coin: 50
+    upgradeCost: 100

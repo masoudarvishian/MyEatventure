@@ -69,11 +69,11 @@ public sealed class DummyUISystem : IInitializeSystem
         currentDrinkCoinLevel == _drinkCoinLevelsPrice.coinLevels.Length - 1;
 
     private bool IsEligibleToUpgradeDrink(int coinAmount, int currentDrinkCoinLevel) =>
-       coinAmount >= _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].upgradePrice;
+       coinAmount >= _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].upgradeCost;
 
     private void ShowUpgradeInfo(int currentDrinkCoinLevel)
     {
-        _dummyUI.GetUpgradeDrinkCostText().text = _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].upgradePrice.ToString();
+        _dummyUI.GetUpgradeDrinkCostText().text = _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].upgradeCost.ToString();
         _dummyUI.GetDrinkPriceText().text = _drinkCoinLevelsPrice.coinLevels[currentDrinkCoinLevel + 1].coin.ToString();
         _dummyUI.GetUpgradeInfo().SetActive(true);
     }

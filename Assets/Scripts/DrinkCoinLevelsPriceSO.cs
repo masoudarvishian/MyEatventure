@@ -5,7 +5,7 @@ using UnityEngine;
 public struct CoinLevel
 {
     public int coin;
-    public int upgradePrice;
+    public int upgradeCost;
 }
 
 [CreateAssetMenu()]

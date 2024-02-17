@@ -23,11 +23,19 @@ public sealed class CreateRestaurantSystem : IInitializeSystem
 
     public void Initialize()
     {
-        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+        SubscribeToEvents();
+        CreateAndLinkRestaurantEntity();
+    }
 
+    private void SubscribeToEvents()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+    }
+
+    private void CreateAndLinkRestaurantEntity()
+    {
         var restaurantObj = GameObject.Instantiate(_restaurantLevelsCost.restaurantLevels[RepositorySystem.CurrentRestaurantLevel].prefab);
         restaurantObj.transform.position = Vector3.zero;
-
         var e = _contexts.game.CreateEntity();
         e.isRestaurant = true;
         e.AddVisual(restaurantObj);

@@ -27,7 +27,6 @@ public sealed class CreateCustomerSystem : IInitializeSystem
         _customerPrefab = customerPrefab;
         _customersParent = customersParent;
         _customerSpawnPoint = customerSpawnPoint;
-       
         _frontDeskGroup = _contexts.game.GetGroup(GameMatcher.FrontDeskSpot);
     }
 
@@ -39,25 +38,28 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     public void Initialize()
     {
         SubscribeToEvents();
-
-        Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ => GenerateCustomer()).AddTo(_compositeDisposable);
-        Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval))).Subscribe(_ =>
-        {
-            GenerateCustomer();
-        }).AddTo(_compositeDisposable);
+        StartIntervalToGenerateCustomers();
     }
 
     private void SubscribeToEvents()
     {
         DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
-        DummyUISystem.OnClickAddCustomer.Subscribe(_ => 
+        DummyUISystem.OnClickAddCustomer.Subscribe(_ =>
         {
             if (HasMaxNumberOfCustomers())
             {
                 Debug.Log("Please wait, you have the max number of customers at the moment!");
                 return;
             }
+            GenerateCustomer();
+        }).AddTo(_compositeDisposable);
+    }
 
+    private void StartIntervalToGenerateCustomers()
+    {
+        Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ => GenerateCustomer()).AddTo(_compositeDisposable);
+        Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval))).Subscribe(_ =>
+        {
             GenerateCustomer();
         }).AddTo(_compositeDisposable);
     }
@@ -66,8 +68,12 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     {
         minGenerateInterval = 2;
         maxGenerateInterval = 5;
+        UnlinkAndDestroyAllCustomers();
+    }
 
-        foreach(var e in _contexts.game.GetGroup(GameMatcher.Customer).GetEntities())
+    private void UnlinkAndDestroyAllCustomers()
+    {
+        foreach (var e in _contexts.game.GetGroup(GameMatcher.Customer).GetEntities())
         {
             var obj = e.visual.gameObject;
             obj.Unlink();

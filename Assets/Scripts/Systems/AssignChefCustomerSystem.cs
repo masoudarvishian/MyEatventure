@@ -19,18 +19,24 @@ public sealed class AssignChefCustomerSystem : IExecuteSystem
     public void Execute()
     {
         for (int i = 0; i < _waitingCustomersQueue.Count; i++)
-        {
-            var waitingCustomerEntity = _waitingCustomersQueue.ElementAt(i);
-            var freeChefEntity = GetClosestChef(waitingCustomerEntity.position.value, _freeChefGroup.GetEntities());
-
-            if (_waitingCustomersQueue.Count == 0 || freeChefEntity == null)
-                break;
-
-            freeChefEntity.AddCustomerIndex(waitingCustomerEntity.creationIndex);
-            freeChefEntity.ReplaceTargetPosition(waitingCustomerEntity.targetDeskPosition.value);
-            _waitingCustomersQueue.Dequeue();
-        }
+            AssignCustomerToFreeChef(i);
     }
+
+    private void AssignCustomerToFreeChef(int index)
+    {
+        var waitingCustomerEntity = _waitingCustomersQueue.ElementAt(index);
+        var freeChefEntity = GetClosestChef(waitingCustomerEntity.position.value, _freeChefGroup.GetEntities());
+
+        if (IsNotEligibleToAssign(freeChefEntity))
+            return;
+
+        freeChefEntity.AddCustomerIndex(waitingCustomerEntity.creationIndex);
+        freeChefEntity.ReplaceTargetPosition(waitingCustomerEntity.targetDeskPosition.value);
+        _waitingCustomersQueue.Dequeue();
+    }
+
+    private bool IsNotEligibleToAssign(GameEntity freeChefEntity) => 
+        _waitingCustomersQueue.Count == 0 || freeChefEntity == null;
 
     private void OnWaitingCustomerAdded(IGroup<GameEntity> group, GameEntity entity, int index, IComponent component)
     {

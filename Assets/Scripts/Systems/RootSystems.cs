@@ -21,7 +21,7 @@ public class RootSystems : Feature
         Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint));
         Add(new MovingChefSystem(contexts));
         Add(new DeliveryOrderSystem(contexts));
-        Add(new TakingOrderDetectorSystem(contexts));
+        Add(new TakingOrderSystem(contexts));
         Add(new StartCookingSystem(contexts));
         Add(new CustomerUISystem(contexts));
         Add(new MoveCustomerSystem(contexts, customerLeavingPoint));

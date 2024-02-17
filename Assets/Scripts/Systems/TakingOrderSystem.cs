@@ -5,7 +5,7 @@ using UnityEngine;
 using UniRx;
 using System;
 
-public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IInitializeSystem
+public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeSystem
 {
     private readonly Contexts _contexts;
     private IGroup<GameEntity> _customersGroup;
@@ -17,14 +17,14 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
     private const float COOLDOWN_TAKING_ORDER = 1f;
     private const float COOLDOWN_FIRST_DELIVERY = 0.1f;
 
-    public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
+    public TakingOrderSystem(Contexts contexts) : base(contexts.game)
     {
         _contexts = contexts;
         _customersGroup = _contexts.game.GetGroup(GameMatcher.Customer);
         _kitchenGroup = _contexts.game.GetGroup(GameMatcher.Kitchen);
     }
 
-    ~TakingOrderDetectorSystem()
+    ~TakingOrderSystem()
     {
         _compositeDisposable.Dispose();
     }
@@ -47,12 +47,13 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
 
     private void SubscribeToEvents()
     {
-        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => { }).AddTo(_compositeDisposable);
-        StartCookingSystem.OnKitchenGetsFree.Subscribe(_ =>
-        {
-            if (_chefEntityQueue.Count > 0)
-                CheckToTakeOrderFromPendingCustomers(_chefEntityQueue.Dequeue());
-        }).AddTo(_compositeDisposable);
+        StartCookingSystem.OnKitchenGetsFree
+            .Subscribe(_ =>
+            {
+                if (_chefEntityQueue.Count > 0)
+                    CheckToTakeOrderFromPendingCustomers(_chefEntityQueue.Dequeue());
+            })
+            .AddTo(_compositeDisposable);
     }
 
     private void CheckToTakeOrderFromPendingCustomers(GameEntity chefEntity)
@@ -62,47 +63,52 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
             var freeKitchens = GetFreeKitchens();
             if (ChefIsDeliveringFirstOrderToCustomer(chefEntity, customerEntity))
             {
-                if (freeKitchens.Count() <= 0)
-                    AddChefToQueue(chefEntity);
-                else
-                {
-                    var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
-                    _kitchenGroup.GetEntities().First().isBuysKitchen = true;
-                    EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
-                        .Subscribe(_ =>
-                        {
-                            GoToKitchen(chefEntity, targetKitchenPos);
-                        }).AddTo(_compositeDisposable);
-                }
+                HandleDeliveringFirstOrder(chefEntity, freeKitchens);
                 continue;
             }
+            else if (ShouldTakeTheOrder(chefEntity, customerEntity))
+                HandleTakingTheOrder(chefEntity, customerEntity, freeKitchens);
+        }
+    }
 
-            if (ShouldTakeTheOrder(chefEntity, customerEntity))
-            {
-                if (freeKitchens.Count() <= 0)
-                    AddChefToQueue(chefEntity);
-                else
+    private void HandleTakingTheOrder(GameEntity chefEntity, GameEntity customerEntity, IEnumerable<GameEntity> freeKitchens)
+    {
+        if (freeKitchens.Count() <= 0)
+            AddChefToQueue(chefEntity);
+        else
+        {
+            var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
+            _kitchenGroup.GetEntities().First().isBuysKitchen = true;
+            EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER)
+                .Subscribe(_ =>
                 {
-                    var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
-                    _kitchenGroup.GetEntities().First().isBuysKitchen = true;
-                    EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER)
-                        .Subscribe(_ =>
-                        {
-                            GoToKitchen(chefEntity, targetKitchenPos);
-                            UpdateTakingOrderComponents(customerEntity);
-                        }).AddTo(_compositeDisposable);
-                }
-            }
+                    GoToKitchen(chefEntity, targetKitchenPos);
+                    UpdateTakingOrderComponents(customerEntity);
+                }).AddTo(_compositeDisposable);
+        }
+    }
+
+    private void HandleDeliveringFirstOrder(GameEntity chefEntity, IEnumerable<GameEntity> freeKitchens)
+    {
+        if (freeKitchens.Count() <= 0)
+            AddChefToQueue(chefEntity);
+        else
+        {
+            var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
+            _kitchenGroup.GetEntities().First().isBuysKitchen = true;
+            EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
+                .Subscribe(_ =>
+                {
+                    GoToKitchen(chefEntity, targetKitchenPos);
+                }).AddTo(_compositeDisposable);
         }
     }
 
     private void AddChefToQueue(GameEntity chefEntity)
     {
-        if (!_chefEntityQueue.Contains(chefEntity))
-        {
-            _chefEntityQueue.Enqueue(chefEntity);
-            Debug.Log("Queue: " + string.Join(',', _chefEntityQueue.Select(x => x.creationIndex)));
-        }
+        if (_chefEntityQueue.Contains(chefEntity))
+            return;
+        _chefEntityQueue.Enqueue(chefEntity);
     }
 
     private IEnumerable<GameEntity> GetPendingCustomers() =>

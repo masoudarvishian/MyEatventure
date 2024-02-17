@@ -9,10 +9,8 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
 {
     private readonly Contexts _contexts;
     private IGroup<GameEntity> _customersGroup;
-    private IGroup<GameEntity> _restaurantGroup;
     private IGroup<GameEntity> _kitchenGroup;
     private CompositeDisposable _compositeDisposable = new();
-    private RestaurantTargetPositions _restaurantTargetPositions;
 
     private readonly Queue<GameEntity> _chefEntityQueue = new Queue<GameEntity>();
 
@@ -23,7 +21,6 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
     {
         _contexts = contexts;
         _customersGroup = _contexts.game.GetGroup(GameMatcher.Customer);
-        _restaurantGroup = _contexts.game.GetGroup(GameMatcher.Restaurant);
         _kitchenGroup = _contexts.game.GetGroup(GameMatcher.Kitchen);
     }
 
@@ -50,35 +47,63 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
 
     private void SubscribeToEvents()
     {
-        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => ResetRestaurantTargetPosition()).AddTo(_compositeDisposable);
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => { }).AddTo(_compositeDisposable);
+        StartCookingSystem.OnKitchenGetsFree.Subscribe(_ =>
+        {
+            if (_chefEntityQueue.Count > 0)
+                CheckToTakeOrderFromPendingCustomers(_chefEntityQueue.Dequeue());
+        }).AddTo(_compositeDisposable);
     }
 
     private void CheckToTakeOrderFromPendingCustomers(GameEntity chefEntity)
     {
-        ResetRestaurantTargetPosition();
         foreach (var customerEntity in GetPendingCustomers())
         {
+            var freeKitchens = GetFreeKitchens();
             if (ChefIsDeliveringFirstOrderToCustomer(chefEntity, customerEntity))
             {
-                EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY);
+                if (freeKitchens.Count() <= 0)
+                    AddChefToQueue(chefEntity);
+                else
+                {
+                    var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
+                    _kitchenGroup.GetEntities().First().isBuysKitchen = true;
+                    EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
+                        .Subscribe(_ =>
+                        {
+                            GoToKitchen(chefEntity, targetKitchenPos);
+                        }).AddTo(_compositeDisposable);
+                }
                 continue;
             }
 
             if (ShouldTakeTheOrder(chefEntity, customerEntity))
             {
-                EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER);
-                UpdateTakingOrderComponents(customerEntity);
+                if (freeKitchens.Count() <= 0)
+                    AddChefToQueue(chefEntity);
+                else
+                {
+                    var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
+                    _kitchenGroup.GetEntities().First().isBuysKitchen = true;
+                    EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER)
+                        .Subscribe(_ =>
+                        {
+                            GoToKitchen(chefEntity, targetKitchenPos);
+                            UpdateTakingOrderComponents(customerEntity);
+                        }).AddTo(_compositeDisposable);
+                }
             }
         }
     }
 
-    private void ResetRestaurantTargetPosition()
+    private void AddChefToQueue(GameEntity chefEntity)
     {
-        _restaurantTargetPositions = GetRestaurantTargetPosition();
+        if (!_chefEntityQueue.Contains(chefEntity))
+        {
+            _chefEntityQueue.Enqueue(chefEntity);
+            Debug.Log("Queue: " + string.Join(',', _chefEntityQueue.Select(x => x.creationIndex)));
+        }
     }
-
-    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
-       _restaurantGroup.GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 
     private IEnumerable<GameEntity> GetPendingCustomers() =>
         _customersGroup.GetEntities().Where(x => x.quantity.value > 0);
@@ -90,26 +115,26 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
 
 
-    private void EntityCooldown(GameEntity chefEntity, float cooldownDuration)
+    private IObservable<long> EntityCooldown(GameEntity chefEntity, float cooldownDuration)
     {
         chefEntity.AddCooldown(cooldownDuration);
-        Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
-        {
-            chefEntity.RemoveCooldown();
-            GoToKitchen(chefEntity);
-        }).AddTo(_compositeDisposable);
+        return Observable.Timer(TimeSpan.FromSeconds(cooldownDuration))
+            .DoOnCompleted(() => 
+            {
+                chefEntity.RemoveCooldown();
+            });
     }
 
     private static bool ShouldTakeTheOrder(GameEntity chefEntity, GameEntity customerEntity) =>
         HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value);
 
-    private void GoToKitchen(GameEntity chefEntity)
+    private void GoToKitchen(GameEntity chefEntity, Vector3 kitchenPosition)
     {
-        chefEntity.ReplaceTargetPosition(GetFirstKitchenSpotPosition());
+        chefEntity.ReplaceTargetPosition(kitchenPosition);
     }
 
-    private Vector3 GetFirstKitchenSpotPosition() =>
-        _kitchenGroup.GetEntities().First().visual.gameObject.transform.position;
+    private IEnumerable<GameEntity> GetFreeKitchens() =>
+        _kitchenGroup.GetEntities().Where(x => !x.isBuysKitchen);
 
     private static void UpdateTakingOrderComponents(GameEntity customerEntity)
     {

@@ -7,11 +7,14 @@ using UnityEngine;
 
 internal class StartCookingSystem : ReactiveSystem<GameEntity>
 {
+    public static IObservable<Unit> OnKitchenGetsFree => _onKitchenGetsFree;
+
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _customerGroup;
     private readonly IGroup<GameEntity> _restaurantGroup;
     private readonly IGroup<GameEntity> _kitchenGroup;
     private CompositeDisposable _compositeDisposable = new();
+    private static ISubject<Unit> _onKitchenGetsFree = new Subject<Unit>();
 
     private const float COOLDOWN_DURATION = 2f;
 
@@ -60,6 +63,8 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
             .Subscribe(_ =>
             {
                 chefEntity.RemoveCooldown();
+                _kitchenGroup.GetEntities().First().isBuysKitchen = false;
+                _onKitchenGetsFree?.OnNext(Unit.Default);
                 if (NoCustomerExistsFor(chefEntity)) return;
                 GoBackToCustomer(chefEntity);
             })

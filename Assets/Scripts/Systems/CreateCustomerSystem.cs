@@ -15,9 +15,7 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     private readonly CompositeDisposable _compositeDisposable = new();
     private IDisposable _intervalDisposable;
 
-    private int minGenerateInterval = 4;
-    private int maxGenerateInterval = 9;
-    
+    private int generateIntervalSec = 5;
 
     public CreateCustomerSystem(
         Contexts contexts, 
@@ -75,16 +73,16 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     private void StartIntervalToGenerateCustomers()
     {
         _intervalDisposable = Observable
-            .Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval)))
+            .Interval(TimeSpan.FromSeconds(generateIntervalSec))
             .Subscribe(_ => GenerateCustomer());
     }
 
     private void OnClickRestaurantUpgrade()
     {
         _intervalDisposable?.Dispose();
-        minGenerateInterval = 2;
-        maxGenerateInterval = 7;
+        generateIntervalSec = 3;
         UnlinkAndDestroyAllCustomers();
+        GenerateCustomer();
         StartIntervalToGenerateCustomers();
     }
 

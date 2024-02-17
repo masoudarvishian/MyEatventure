@@ -7,12 +7,14 @@ public sealed class CreateChefSystem : IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly GameObject _chefPrefab;
+    private readonly IGroup<GameEntity> _chefGroup;
     private readonly CompositeDisposable _compositeDisposable = new();
 
     public CreateChefSystem(Contexts contexts, GameObject chefPrefab)
     {
         _contexts = contexts;
         _chefPrefab = chefPrefab;
+        _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
     }
 
     ~CreateChefSystem()
@@ -29,6 +31,19 @@ public sealed class CreateChefSystem : IInitializeSystem
     private void SubscribeToEvents()
     {
         DummyUISystem.OnClickAddChef.Subscribe(_ => InstantiateAndLinkChef()).AddTo(_compositeDisposable);
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => ResetChefPositions()).AddTo(_compositeDisposable);
+    }
+
+    private void ResetChefPositions()
+    {
+        for (int i = 0; i < _chefGroup.GetEntities().Length; i++)
+        {
+            GameEntity chefEntity = _chefGroup.GetEntities()[i];
+            chefEntity.visual.gameObject.transform.position = new Vector3((i * 3f) - 3f, 0.5f, 0f);
+            chefEntity.position.value = new Vector3((i * 3f) - 3f, 0.5f, 0f);
+            if (chefEntity.hasTargetPosition)
+                chefEntity.RemoveTargetPosition();
+        }
     }
 
     private void InstantiateAndLinkChef()

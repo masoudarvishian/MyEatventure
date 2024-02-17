@@ -7,10 +7,33 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public sealed class ChefUISystem : ReactiveSystem<GameEntity>
+public sealed class ChefUISystem : ReactiveSystem<GameEntity>, IInitializeSystem
 {
+    private readonly CompositeDisposable _compositeDisposable = new();
+    private IGroup<GameEntity> _chefCooldownGroup;
+
     public ChefUISystem(Contexts contexts) : base(contexts.game)
     {
+        _chefCooldownGroup = contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef, GameMatcher.Cooldown));
+    }
+
+    ~ChefUISystem()
+    {
+        _compositeDisposable.Dispose();
+    }
+
+    public void Initialize()
+    {
+        SubscribeToEvents();
+    }
+
+    private void SubscribeToEvents()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade
+                    .Subscribe(_ =>
+                    {
+                        HideCooldownUIFor(_chefCooldownGroup.GetEntities());
+                    }).AddTo(_compositeDisposable);
     }
 
     protected override void Execute(List<GameEntity> entities)

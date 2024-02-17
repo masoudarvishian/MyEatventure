@@ -11,7 +11,7 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
     private IGroup<GameEntity> _customersGroup;
     private IGroup<GameEntity> _kitchenGroup;
     private CompositeDisposable _compositeDisposable = new();
-
+    private IDisposable _cooldownDisposable;
     private readonly Queue<GameEntity> _chefEntityQueue = new Queue<GameEntity>();
 
     private const float COOLDOWN_TAKING_ORDER = 1f;
@@ -47,6 +47,7 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
 
     private void SubscribeToEvents()
     {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => _cooldownDisposable.Dispose()).AddTo(_compositeDisposable);
         StartCookingSystem.OnKitchenGetsFree
             .Subscribe(_ =>
             {
@@ -81,7 +82,7 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
             var targetKitchenPos = freeKitchen.visual.gameObject.transform.position;
             var kitchenIndex = freeKitchen.index.value;
             freeKitchen.isBuysKitchen = true;
-            EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
+            _cooldownDisposable = EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
                 .Subscribe(_ =>
                 {
                     GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
@@ -99,7 +100,7 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
             var targetKitchenPos = freeKitchen.visual.gameObject.transform.position;
             var kitchenIndex = freeKitchen.index.value;
             freeKitchen.isBuysKitchen = true;
-            EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER)
+            _cooldownDisposable = EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER)
                 .Subscribe(_ =>
                 {
                     GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
@@ -127,11 +128,12 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
 
     private IObservable<long> EntityCooldown(GameEntity chefEntity, float cooldownDuration)
     {
-        chefEntity.AddCooldown(cooldownDuration);
+        chefEntity.ReplaceCooldown(cooldownDuration);
         return Observable.Timer(TimeSpan.FromSeconds(cooldownDuration))
             .DoOnCompleted(() => 
             {
-                chefEntity.RemoveCooldown();
+                if (chefEntity.hasCooldown)
+                    chefEntity.RemoveCooldown();
             });
     }
 
@@ -149,6 +151,9 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
 
     private static void UpdateTakingOrderComponents(GameEntity customerEntity)
     {
+        if (!customerEntity.isEnabled)
+            return;
+
         customerEntity.isPreparingOrder = true;
         customerEntity.isWaiting = false;
     }

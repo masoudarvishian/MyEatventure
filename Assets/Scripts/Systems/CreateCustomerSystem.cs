@@ -13,9 +13,11 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     private readonly Transform _customerSpawnPoint;
     private readonly IGroup<GameEntity> _frontDeskGroup;
     private readonly CompositeDisposable _compositeDisposable = new();
+    private IDisposable _intervalDisposable;
 
-    private int minGenerateInterval = 5;
-    private int maxGenerateInterval = 10;
+    private int minGenerateInterval = 4;
+    private int maxGenerateInterval = 9;
+    
 
     public CreateCustomerSystem(
         Contexts contexts, 
@@ -33,12 +35,27 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     ~CreateCustomerSystem()
     {
         _compositeDisposable.Dispose();
+        _intervalDisposable.Dispose();
     }
 
     public void Initialize()
     {
         SubscribeToEvents();
+        GenerateCustomer();
         StartIntervalToGenerateCustomers();
+    }
+
+    private void GenerateCustomer()
+    {
+        if (HasMaxNumberOfCustomers())
+            return;
+
+        GameObject customerObj = InstantiateCustomerPrefab();
+        GameEntity customerEntity = CreateCustomerEntity(customerObj);
+        var emptyFrontDeskEntity = GetFirstFreeFrontDesk();
+        var behindDeskTargetPos = GetBehindDeskPositionAtIndex(emptyFrontDeskEntity.index.value);
+        AddRelatedComponentsToEntity(customerEntity, emptyFrontDeskEntity, behindDeskTargetPos);
+        customerObj.Link(customerEntity);
     }
 
     private void SubscribeToEvents()
@@ -57,18 +74,18 @@ public sealed class CreateCustomerSystem : IInitializeSystem
 
     private void StartIntervalToGenerateCustomers()
     {
-        Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ => GenerateCustomer()).AddTo(_compositeDisposable);
-        Observable.Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval))).Subscribe(_ =>
-        {
-            GenerateCustomer();
-        }).AddTo(_compositeDisposable);
+        _intervalDisposable = Observable
+            .Interval(TimeSpan.FromSeconds(UnityEngine.Random.Range(minGenerateInterval, maxGenerateInterval)))
+            .Subscribe(_ => GenerateCustomer());
     }
 
     private void OnClickRestaurantUpgrade()
     {
+        _intervalDisposable?.Dispose();
         minGenerateInterval = 2;
-        maxGenerateInterval = 5;
+        maxGenerateInterval = 7;
         UnlinkAndDestroyAllCustomers();
+        StartIntervalToGenerateCustomers();
     }
 
     private void UnlinkAndDestroyAllCustomers()
@@ -80,19 +97,6 @@ public sealed class CreateCustomerSystem : IInitializeSystem
             e.Destroy();
             GameObject.Destroy(obj);
         }
-    }
-
-    private void GenerateCustomer()
-    {
-        if (HasMaxNumberOfCustomers())
-            return;
-
-        GameObject customerObj = InstantiateCustomerPrefab();
-        GameEntity customerEntity = CreateCustomerEntity(customerObj);
-        var emptyFrontDeskEntity = GetFirstFreeFrontDesk();
-        var behindDeskTargetPos = GetBehindDeskPositionAtIndex(emptyFrontDeskEntity.index.value);
-        AddRelatedComponentsToEntity(customerEntity, emptyFrontDeskEntity, behindDeskTargetPos);
-        customerObj.Link(customerEntity);
     }
 
     private bool HasMaxNumberOfCustomers()

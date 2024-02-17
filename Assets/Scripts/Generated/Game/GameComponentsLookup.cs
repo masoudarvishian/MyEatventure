@@ -11,31 +11,33 @@ public static class GameComponentsLookup {
     public const int BuysKitchen = 0;
     public const int Chef = 1;
     public const int Coin = 2;
-    public const int CurrentDrinkLevel = 3;
-    public const int CurrentRestaurantLevel = 4;
-    public const int Customer = 5;
-    public const int CustomerIndex = 6;
-    public const int Delivered = 7;
-    public const int FrontDeskSpot = 8;
-    public const int Index = 9;
-    public const int Occupied = 10;
-    public const int Position = 11;
-    public const int PreparingOrder = 12;
-    public const int Quantity = 13;
-    public const int Restaurant = 14;
-    public const int ShowCanvas = 15;
-    public const int TargetDeskIndex = 16;
-    public const int TargetDeskPosition = 17;
-    public const int TargetPosition = 18;
-    public const int Visual = 19;
-    public const int Waiting = 20;
+    public const int Cooldown = 3;
+    public const int CurrentDrinkLevel = 4;
+    public const int CurrentRestaurantLevel = 5;
+    public const int Customer = 6;
+    public const int CustomerIndex = 7;
+    public const int Delivered = 8;
+    public const int FrontDeskSpot = 9;
+    public const int Index = 10;
+    public const int Occupied = 11;
+    public const int Position = 12;
+    public const int PreparingOrder = 13;
+    public const int Quantity = 14;
+    public const int Restaurant = 15;
+    public const int ShowCanvas = 16;
+    public const int TargetDeskIndex = 17;
+    public const int TargetDeskPosition = 18;
+    public const int TargetPosition = 19;
+    public const int Visual = 20;
+    public const int Waiting = 21;
 
-    public const int TotalComponents = 21;
+    public const int TotalComponents = 22;
 
     public static readonly string[] componentNames = {
         "BuysKitchen",
         "Chef",
         "Coin",
+        "Cooldown",
         "CurrentDrinkLevel",
         "CurrentRestaurantLevel",
         "Customer",
@@ -60,6 +62,7 @@ public static class GameComponentsLookup {
         typeof(BuysKitchenComponent),
         typeof(ChefComponent),
         typeof(CoinComponent),
+        typeof(CooldownComponent),
         typeof(CurrentDrinkLevelComponent),
         typeof(CurrentRestaurantLevelComponent),
         typeof(CustomerComponent),

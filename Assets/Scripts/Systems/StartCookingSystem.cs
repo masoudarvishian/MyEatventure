@@ -53,9 +53,11 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 
     private void StartCooking(GameEntity chefEntity)
     {
+        chefEntity.AddCooldown(COOLDOWN_DURATION);
         Observable.Timer(TimeSpan.FromSeconds(COOLDOWN_DURATION))
             .Subscribe(_ =>
             {
+                chefEntity.RemoveCooldown();
                 if (NoCustomerExistsFor(chefEntity)) return;
                 GoBackToCustomer(chefEntity);
             })

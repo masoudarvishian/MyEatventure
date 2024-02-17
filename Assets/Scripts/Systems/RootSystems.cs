@@ -22,9 +22,10 @@ public class RootSystems : Feature
         Add(new DeliveryOrderSystem(contexts));
         Add(new TakingOrderDetectorSystem(contexts));
         Add(new StartCookingSystem(contexts));
-        Add(new CustomerUIPopupSystem(contexts));
+        Add(new CustomerUISystem(contexts));
         Add(new MoveCustomerSystem(contexts, customerLeavingPoint));
         Add(new AssignChefCustomerSystem(contexts));
         Add(new DummyUISystem(contexts, dummyUI, drinkCoinLevelsPrice, restaurantLevelsCost));
+        Add(new ChefUISystem(contexts));
     }
 }

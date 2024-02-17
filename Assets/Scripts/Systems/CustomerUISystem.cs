@@ -4,9 +4,9 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-public sealed class CustomerUIPopupSystem : ReactiveSystem<GameEntity>
+public sealed class CustomerUISystem : ReactiveSystem<GameEntity>
 {
-    public CustomerUIPopupSystem(Contexts contexts) : base(contexts.game)
+    public CustomerUISystem(Contexts contexts) : base(contexts.game)
     {
     }
 
@@ -19,7 +19,7 @@ public sealed class CustomerUIPopupSystem : ReactiveSystem<GameEntity>
     protected override bool Filter(GameEntity entity) => entity.isCustomer;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.AllOf(GameMatcher.ShowCanvas).AddedOrRemoved());
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Customer, GameMatcher.ShowCanvas).AddedOrRemoved());
 
     private static void DisplayCustomerPopopFor(IEnumerable<GameEntity> entities)
     {

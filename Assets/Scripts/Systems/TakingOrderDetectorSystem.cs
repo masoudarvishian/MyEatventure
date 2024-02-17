@@ -88,8 +88,10 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
 
     private void EntityCooldown(GameEntity chefEntity, float cooldownDuration)
     {
+        chefEntity.AddCooldown(cooldownDuration);
         Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
         {
+            chefEntity.RemoveCooldown();
             GoToKitchen(chefEntity);
         }).AddTo(_compositeDisposable);
     }

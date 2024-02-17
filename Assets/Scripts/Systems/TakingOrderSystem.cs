@@ -58,9 +58,9 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
 
     private void CheckToTakeOrderFromPendingCustomers(GameEntity chefEntity)
     {
+        var freeKitchens = GetFreeKitchens();
         foreach (var customerEntity in GetPendingCustomers())
         {
-            var freeKitchens = GetFreeKitchens();
             if (ChefIsDeliveringFirstOrderToCustomer(chefEntity, customerEntity))
             {
                 HandleDeliveringFirstOrder(chefEntity, freeKitchens);
@@ -73,16 +73,18 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
 
     private void HandleTakingTheOrder(GameEntity chefEntity, GameEntity customerEntity, IEnumerable<GameEntity> freeKitchens)
     {
-        if (freeKitchens.Count() <= 0)
+        if (freeKitchens.Count() == 0)
             AddChefToQueue(chefEntity);
         else
         {
-            var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
-            _kitchenGroup.GetEntities().First().isBuysKitchen = true;
+            var freeKitchen = freeKitchens.First();
+            var targetKitchenPos = freeKitchen.visual.gameObject.transform.position;
+            var kitchenIndex = freeKitchen.index.value;
+            freeKitchen.isBuysKitchen = true;
             EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER)
                 .Subscribe(_ =>
                 {
-                    GoToKitchen(chefEntity, targetKitchenPos);
+                    GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
                     UpdateTakingOrderComponents(customerEntity);
                 }).AddTo(_compositeDisposable);
         }
@@ -94,12 +96,14 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
             AddChefToQueue(chefEntity);
         else
         {
-            var targetKitchenPos = freeKitchens.First().visual.gameObject.transform.position;
-            _kitchenGroup.GetEntities().First().isBuysKitchen = true;
+            var freeKitchen = freeKitchens.First();
+            var targetKitchenPos = freeKitchen.visual.gameObject.transform.position;
+            var kitchenIndex = freeKitchen.index.value;
+            freeKitchen.isBuysKitchen = true;
             EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
                 .Subscribe(_ =>
                 {
-                    GoToKitchen(chefEntity, targetKitchenPos);
+                    GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
                 }).AddTo(_compositeDisposable);
         }
     }
@@ -134,9 +138,10 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
     private static bool ShouldTakeTheOrder(GameEntity chefEntity, GameEntity customerEntity) =>
         HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value);
 
-    private void GoToKitchen(GameEntity chefEntity, Vector3 kitchenPosition)
+    private void GoToKitchen(GameEntity chefEntity, Vector3 kitchenPosition, int kitchenIndex)
     {
         chefEntity.ReplaceTargetPosition(kitchenPosition);
+        chefEntity.ReplaceKitchenIndex(kitchenIndex);
     }
 
     private IEnumerable<GameEntity> GetFreeKitchens() =>

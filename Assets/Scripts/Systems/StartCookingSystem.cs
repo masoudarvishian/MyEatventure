@@ -36,7 +36,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         CheckIfChefsShouldStartCooking(chefEntities);
     }
 
-    protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
+    protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef && entity.hasKitchenIndex;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
         context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
@@ -45,25 +45,27 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
     {
         foreach (var chefEntity in chefEntities)
         {
-            if (HasReachedToTargetPosition(chefEntity, GetFirstKitchenPosition()))
-                StartCooking(chefEntity);
+            var kitchen = GetChefKitchen(chefEntity);
+            if (HasReachedToTargetPosition(chefEntity, GetKitchenPosition(kitchen)))
+                StartCooking(chefEntity, kitchen);
         }
     }
 
     private bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
 
-    private Vector3 GetFirstKitchenPosition() =>
-        _kitchenGroup.GetEntities().First().visual.gameObject.transform.position;
+    private Vector3 GetKitchenPosition(GameEntity freeKitchen) =>
+        freeKitchen.visual.gameObject.transform.position;
 
-    private void StartCooking(GameEntity chefEntity)
+    private void StartCooking(GameEntity chefEntity, GameEntity kitchenEntity)
     {
         chefEntity.AddCooldown(COOLDOWN_DURATION);
         Observable.Timer(TimeSpan.FromSeconds(COOLDOWN_DURATION))
             .Subscribe(_ =>
             {
+                chefEntity.RemoveKitchenIndex();
                 chefEntity.RemoveCooldown();
-                _kitchenGroup.GetEntities().First().isBuysKitchen = false;
+                kitchenEntity.isBuysKitchen = false;
                 _onKitchenGetsFree?.OnNext(Unit.Default);
                 if (NoCustomerExistsFor(chefEntity)) return;
                 GoBackToCustomer(chefEntity);
@@ -85,6 +87,6 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
     private GameEntity GetChefCustomerEntity(GameEntity chefEntity) =>
        _customerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
 
-    private RestaurantTargetPositions GetRestaurantTargetPosition() =>
-        _restaurantGroup.GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
+    private GameEntity GetChefKitchen(GameEntity chefEntity) =>
+        _kitchenGroup.GetEntities().Where(x => x.index.value == chefEntity.kitchenIndex.value).First();
 }

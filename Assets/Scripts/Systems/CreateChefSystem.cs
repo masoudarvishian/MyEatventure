@@ -36,11 +36,12 @@ public sealed class CreateChefSystem : IInitializeSystem
 
     private void ResetChefPositions()
     {
-        for (int i = 0; i < _chefGroup.GetEntities().Length; i++)
+        var chefEntitiesLength = _chefGroup.GetEntities().Length;
+        for (int i = 0; i < chefEntitiesLength; i++)
         {
             GameEntity chefEntity = _chefGroup.GetEntities()[i];
-            chefEntity.visual.gameObject.transform.position = new Vector3((i * 3f) - 3f, 0.5f, 0f);
-            chefEntity.position.value = new Vector3((i * 3f) - 3f, 0.5f, 0f);
+            chefEntity.visual.gameObject.transform.position = new Vector3((i * chefEntitiesLength) - chefEntitiesLength, 0.5f, 0f);
+            chefEntity.position.value = new Vector3((i * chefEntitiesLength) - chefEntitiesLength, 0.5f, 0f);
             if (chefEntity.hasTargetPosition)
                 chefEntity.RemoveTargetPosition();
         }

@@ -1,19 +1,40 @@
 ﻿using Entitas;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 
-public sealed class AssignChefCustomerSystem : IExecuteSystem
+public sealed class AssignChefCustomerSystem : IExecuteSystem, IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _freeChefGroup;
     private readonly Queue<GameEntity> _waitingCustomersQueue = new();
+    private readonly CompositeDisposable _compositeDisposable = new();
 
     public AssignChefCustomerSystem(Contexts contexts)
     {
         _contexts = contexts;
         _freeChefGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).NoneOf(GameMatcher.CustomerIndex));
         _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Customer).AnyOf(GameMatcher.Waiting)).OnEntityAdded += OnWaitingCustomerAdded;
+    }
+
+    ~AssignChefCustomerSystem()
+    {
+        _compositeDisposable.Dispose();
+    }
+
+    public void Initialize()
+    {
+        SubscribeToEvents();
+    }
+
+    private void SubscribeToEvents()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade
+                    .Subscribe(_ =>
+                    {
+                        _waitingCustomersQueue.Clear();
+                    }).AddTo(_compositeDisposable);
     }
 
     public void Execute()
@@ -35,7 +56,7 @@ public sealed class AssignChefCustomerSystem : IExecuteSystem
         _waitingCustomersQueue.Dequeue();
     }
 
-    private bool IsNotEligibleToAssign(GameEntity freeChefEntity) => 
+    private bool IsNotEligibleToAssign(GameEntity freeChefEntity) =>
         _waitingCustomersQueue.Count == 0 || freeChefEntity == null;
 
     private void OnWaitingCustomerAdded(IGroup<GameEntity> group, GameEntity entity, int index, IComponent component)

@@ -43,11 +43,13 @@ public sealed class RepositorySystem : IInitializeSystem
     private void SubscribeToEvents()
     {
         DeliveryOrderSystem.OnOrderIsDelivered
-                    .Subscribe(_ => UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].coin))
-                    .AddTo(_compositeDisposable);
+            .Subscribe(_ => UpdateEntityWithValue(GetCurrentDrinkLevel().coin)).AddTo(_compositeDisposable);
         DummyUISystem.OnClickDrinkUpgrade.Subscribe(_ => OnClickDrinkUpgrade()).AddTo(_compositeDisposable);
         DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
     }
+
+    private CoinLevel GetCurrentDrinkLevel() =>
+        _drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value];
 
     private void UpdateEntityWithValue(int value)
     {
@@ -63,14 +65,17 @@ public sealed class RepositorySystem : IInitializeSystem
     private void OnClickDrinkUpgrade()
     {
         GetRepositoryEntity().currentDrinkLevel.value++;
-        UpdateEntityWithValue(_drinkCoinLevelsPrice.coinLevels[GetRepositoryEntity().currentDrinkLevel.value].upgradeCost * -1);
+        UpdateEntityWithValue(GetCurrentDrinkLevel().upgradeCost * -1);
     }
 
     private void OnClickRestaurantUpgrade()
     {
         CurrentRestaurantLevel++;
-        UpdateEntityWithValue(_restaurantLevelsCost.restaurantLevels[CurrentRestaurantLevel].upgradeCost * -1);
+        UpdateEntityWithValue(GetCurrentRestaurantLevel().upgradeCost * -1);
     }
+
+    private RestaurantLevel GetCurrentRestaurantLevel() =>
+        _restaurantLevelsCost.restaurantLevels[CurrentRestaurantLevel];
 
     private void CreateAndLinkEntity()
     {

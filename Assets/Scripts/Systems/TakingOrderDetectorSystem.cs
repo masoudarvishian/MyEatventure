@@ -7,17 +7,20 @@ using System;
 
 public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IInitializeSystem
 {
-    private readonly IGroup<GameEntity> _busyKitchenGroup;
     private readonly Contexts _contexts;
     private IGroup<GameEntity> _customersGroup;
+    private IGroup<GameEntity> _restaurantGroup;
     private CompositeDisposable _compositeDisposable = new();
     private RestaurantTargetPositions _restaurantTargetPositions;
 
+    private const float COOLDOWN_TAKING_ORDER = 1f;
+    private const float COOLDOWN_FIRST_DELIVERY = 0.1f;
+
     public TakingOrderDetectorSystem(Contexts contexts) : base(contexts.game)
     {
-        _customersGroup = contexts.game.GetGroup(GameMatcher.Customer);
-        _busyKitchenGroup = contexts.game.GetGroup(GameMatcher.BuysKitchen);
         _contexts = contexts;
+        _customersGroup = _contexts.game.GetGroup(GameMatcher.Customer);
+        _restaurantGroup = _contexts.game.GetGroup(GameMatcher.Restaurant);
     }
 
     ~TakingOrderDetectorSystem()
@@ -27,58 +30,84 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
 
     public void Initialize()
     {
-        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+        SubscribeToEvents();
     }
 
     protected override void Execute(List<GameEntity> entities)
     {
         foreach (var chefEntity in entities)
-            TryToAddCooldownIfChefHasReachedToCustomer(chefEntity);
+            CheckToTakeOrderFromPendingCustomers(chefEntity);
     }
-
-    private void OnClickRestaurantUpgrade()
-    {
-        _restaurantTargetPositions = GetRestaurantTargetPosition();
-    }
-
-    private void TryToAddCooldownIfChefHasReachedToCustomer(GameEntity chefEntity)
-    {
-        _restaurantTargetPositions = GetRestaurantTargetPosition();
-        foreach (var customerEntity in _customersGroup.GetEntities().Where(x => x.quantity.value > 0))
-        {
-            if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value) && customerEntity.isPreparingOrder)
-            {
-                var cooldownDuration = 0.1f;
-                Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
-                {
-                    chefEntity.ReplaceTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
-                }).AddTo(_compositeDisposable);
-
-                continue;
-            }
-
-            if (HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value))
-            {
-                var cooldownDuration = 1f;
-                Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
-                {
-                    chefEntity.ReplaceTargetPosition(_restaurantTargetPositions.GetFirstKitchenSpot().position);
-                }).AddTo(_compositeDisposable);
-
-                customerEntity.isPreparingOrder = true;
-                customerEntity.isWaiting = false;
-            }
-        }
-    }
-
-    private static bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
-        Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
 
     protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
         context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
 
+    private void SubscribeToEvents()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => ResetRestaurantTargetPosition()).AddTo(_compositeDisposable);
+    }
+
+    private void CheckToTakeOrderFromPendingCustomers(GameEntity chefEntity)
+    {
+        ResetRestaurantTargetPosition();
+        foreach (var customerEntity in GetPendingCustomers())
+        {
+            if (ChefIsDeliveringFirstOrderToCustomer(chefEntity, customerEntity))
+            {
+                EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY);
+                continue;
+            }
+
+            if (ShouldTakeTheOrder(chefEntity, customerEntity))
+            {
+                EntityCooldown(chefEntity, COOLDOWN_TAKING_ORDER);
+                UpdateTakingOrderComponents(customerEntity);
+            }
+        }
+    }
+
+    private void ResetRestaurantTargetPosition()
+    {
+        _restaurantTargetPositions = GetRestaurantTargetPosition();
+    }
+
     private RestaurantTargetPositions GetRestaurantTargetPosition() =>
-        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
+       _restaurantGroup.GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
+
+    private IEnumerable<GameEntity> GetPendingCustomers() =>
+        _customersGroup.GetEntities().Where(x => x.quantity.value > 0);
+
+    private static bool ChefIsDeliveringFirstOrderToCustomer(GameEntity chefEntity, GameEntity customerEntity) =>
+        HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value) && customerEntity.isPreparingOrder;
+
+    private static bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
+        Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
+
+
+    private void EntityCooldown(GameEntity chefEntity, float cooldownDuration)
+    {
+        Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ =>
+        {
+            GoToKitchen(chefEntity);
+        }).AddTo(_compositeDisposable);
+    }
+
+    private static bool ShouldTakeTheOrder(GameEntity chefEntity, GameEntity customerEntity) =>
+        HasReachedToTargetPosition(chefEntity, customerEntity.targetDeskPosition.value);
+
+    private void GoToKitchen(GameEntity chefEntity)
+    {
+        chefEntity.ReplaceTargetPosition(GetFirstKitchenSpotPosition());
+    }
+
+    private Vector3 GetFirstKitchenSpotPosition() =>
+        _restaurantTargetPositions.GetFirstKitchenSpot().position;
+
+    private static void UpdateTakingOrderComponents(GameEntity customerEntity)
+    {
+        customerEntity.isPreparingOrder = true;
+        customerEntity.isWaiting = false;
+    }
 }

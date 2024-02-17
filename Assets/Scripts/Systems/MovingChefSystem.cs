@@ -6,6 +6,7 @@ internal class MovingChefSystem : IExecuteSystem, IInitializeSystem
 {
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _chefWithTargetPositionGroup;
+    private readonly IGroup<GameEntity> _chefGroup;
     private readonly CompositeDisposable _compositeDisposable = new();
     private float _speed = 4.0f;
 
@@ -13,6 +14,7 @@ internal class MovingChefSystem : IExecuteSystem, IInitializeSystem
     {
         _contexts = contexts;
         _chefWithTargetPositionGroup = _contexts.game.GetGroup(GameMatcher.AllOf(GameMatcher.Chef).AnyOf(GameMatcher.TargetPosition));
+        _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
     }
 
     ~MovingChefSystem()
@@ -22,12 +24,22 @@ internal class MovingChefSystem : IExecuteSystem, IInitializeSystem
 
     public void Initialize()
     {
-        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => OnClickRestaurantUpgrade()).AddTo(_compositeDisposable);
+        SubscribeToEvents();
     }
 
-    private void OnClickRestaurantUpgrade()
+    public void Execute()
     {
-        foreach (var chefEntity in _contexts.game.GetGroup(GameMatcher.Chef).GetEntities())
+        MoveAllChefs();
+    }
+
+    private void SubscribeToEvents()
+    {
+        DummyUISystem.OnClickRestaurantUpgrade.Subscribe(_ => FreeTheChefs()).AddTo(_compositeDisposable);
+    }
+
+    private void FreeTheChefs()
+    {
+        foreach (var chefEntity in _chefGroup.GetEntities())
         {
             if (chefEntity.hasTargetPosition)
                 chefEntity.RemoveTargetPosition();
@@ -36,7 +48,7 @@ internal class MovingChefSystem : IExecuteSystem, IInitializeSystem
         }
     }
 
-    public void Execute()
+    private void MoveAllChefs()
     {
         foreach (var chefEntity in _chefWithTargetPositionGroup.GetEntities())
         {

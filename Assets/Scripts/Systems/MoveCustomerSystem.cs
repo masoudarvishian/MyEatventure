@@ -1,5 +1,6 @@
 ﻿using Entitas;
 using Entitas.Unity;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -19,33 +20,17 @@ public sealed class MoveCustomerSystem : IExecuteSystem
 
     public void Execute()
     {
-        // move toward the restaurant
-        foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.hasTargetPosition))
+        MoveCustomersToRestaurant(_customerGroup.GetEntities().Where(x => x.hasTargetPosition));
+        LeaveCustomersFromRestaurant(_customerGroup.GetEntities().Where(x => x.delivered.value));
+    }
+
+    private void MoveCustomersToRestaurant(IEnumerable<GameEntity> customerEntities)
+    {
+        foreach (var customerEntity in customerEntities)
         {
             MoveEntity(customerEntity, customerEntity.targetPosition.value);
-
-            if (Vector3.Distance(customerEntity.position.value, customerEntity.targetPosition.value) <= Mathf.Epsilon)
-            {
-                customerEntity.isShowCanvas = true;
-                customerEntity.isWaiting = true;
-                
-                customerEntity.RemoveTargetPosition();
-            }
-        }
-
-        // leave the restaurant
-        foreach (var customerEntity in _customerGroup.GetEntities().Where(x => x.delivered.value))
-        {
-            if (customerEntity.isShowCanvas)
-                customerEntity.isShowCanvas = false;
-
-            MoveEntity(customerEntity, _customerLeavingPoint.position);
-            if (Vector3.Distance(customerEntity.position.value, _customerLeavingPoint.position) <= Mathf.Epsilon)
-            {
-                customerEntity.visual.gameObject.Unlink();
-                GameObject.Destroy(customerEntity.visual.gameObject);
-                customerEntity.Destroy();
-            }
+            if (HasReachedToTargetPosition(customerEntity, customerEntity.targetPosition.value))
+                UpdateWaitingRelatedComponent(customerEntity);
         }
     }
 
@@ -57,4 +42,38 @@ public sealed class MoveCustomerSystem : IExecuteSystem
     }
 
     private float GetStep() => _speed * Time.deltaTime;
+
+    private static bool HasReachedToTargetPosition(GameEntity customerEntity, Vector3 targetPosition) =>
+        Vector3.Distance(customerEntity.position.value, targetPosition) <= Mathf.Epsilon;
+
+    private static void UpdateWaitingRelatedComponent(GameEntity customerEntity)
+    {
+        customerEntity.isShowCanvas = true;
+        customerEntity.isWaiting = true;
+        customerEntity.RemoveTargetPosition();
+    }
+
+    private void LeaveCustomersFromRestaurant(IEnumerable<GameEntity> customerEntities)
+    {
+        foreach (var customerEntity in customerEntities)
+        {
+            UpdateHidingRelatedComponents(customerEntity);
+            MoveEntity(customerEntity, _customerLeavingPoint.position);
+            if (HasReachedToTargetPosition(customerEntity, _customerLeavingPoint.position))
+                UnlikAndDestroyEntity(customerEntity);
+        }
+    }
+
+    private static void UpdateHidingRelatedComponents(GameEntity customerEntity)
+    {
+        if (customerEntity.isShowCanvas)
+            customerEntity.isShowCanvas = false;
+    }
+
+    private static void UnlikAndDestroyEntity(GameEntity customerEntity)
+    {
+        customerEntity.visual.gameObject.Unlink();
+        GameObject.Destroy(customerEntity.visual.gameObject);
+        customerEntity.Destroy();
+    }
 }

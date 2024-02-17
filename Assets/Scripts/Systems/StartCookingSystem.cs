@@ -9,12 +9,16 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
 {
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _customerGroup;
+    private readonly IGroup<GameEntity> _restaurantGroup;
     private CompositeDisposable _compositeDisposable = new();
+
+    private const float COOLDOWN_DURATION = 2f;
 
     public StartCookingSystem(Contexts contexts) : base(contexts.game)
     {
         _contexts = contexts;
         _customerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
+        _restaurantGroup = _contexts.game.GetGroup(GameMatcher.Restaurant);
     }
 
     ~StartCookingSystem()
@@ -22,25 +26,9 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         _compositeDisposable.Dispose();
     }
 
-    protected override void Execute(List<GameEntity> entities)
+    protected override void Execute(List<GameEntity> chefEntities)
     {
-        foreach (var chefEntity in entities)
-        {
-            if (HasReachedToTargetPosition(chefEntity, GetRestaurantTargetPosition().GetFirstKitchenSpot().position))
-            {
-                var busyKitchenEntity = _contexts.game.CreateEntity();
-                busyKitchenEntity.isBuysKitchen = true;
-
-                var cooldownDuration = 2f;
-                Observable.Timer(TimeSpan.FromSeconds(cooldownDuration)).Subscribe(_ => {
-                    if (!chefEntity.hasCustomerIndex || _customerGroup.GetEntities().Length == 0)
-                        return;
-                    var chefCustomerEntity = _customerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
-                    chefEntity.ReplaceTargetPosition(chefCustomerEntity.targetDeskPosition.value);
-                    busyKitchenEntity.Destroy();
-                }).AddTo(_compositeDisposable);
-            }
-        }
+        CheckIfChefsShouldStartCooking(chefEntities);
     }
 
     protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
@@ -48,9 +36,46 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
         context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
 
+    private void CheckIfChefsShouldStartCooking(List<GameEntity> chefEntities)
+    {
+        foreach (var chefEntity in chefEntities)
+        {
+            if (HasReachedToTargetPosition(chefEntity, GetFirstKitchenPosition()))
+                StartCooking(chefEntity);
+        }
+    }
+
     private bool HasReachedToTargetPosition(GameEntity entity, Vector3 targetPosition) =>
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
 
+    private Vector3 GetFirstKitchenPosition() =>
+        GetRestaurantTargetPosition().GetFirstKitchenSpot().position;
+
+    private void StartCooking(GameEntity chefEntity)
+    {
+        Observable.Timer(TimeSpan.FromSeconds(COOLDOWN_DURATION))
+            .Subscribe(_ =>
+            {
+                if (NoCustomerExistsFor(chefEntity)) return;
+                GoBackToCustomer(chefEntity);
+            })
+            .AddTo(_compositeDisposable);
+    }
+
+    private bool NoCustomerExistsFor(GameEntity chefEntity) =>
+        !chefEntity.hasCustomerIndex || _customerGroup.GetEntities().Length == 0;
+
+    private void GoBackToCustomer(GameEntity chefEntity)
+    {
+        chefEntity.ReplaceTargetPosition(GetChefCustomerTargetDeskPosition(chefEntity));
+    }
+
+    private Vector3 GetChefCustomerTargetDeskPosition(GameEntity chefEntity) =>
+        GetChefCustomerEntity(chefEntity).targetDeskPosition.value;
+
+    private GameEntity GetChefCustomerEntity(GameEntity chefEntity) =>
+       _customerGroup.GetEntities().First(x => x.creationIndex == chefEntity.customerIndex.value);
+
     private RestaurantTargetPositions GetRestaurantTargetPosition() =>
-        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
+        _restaurantGroup.GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

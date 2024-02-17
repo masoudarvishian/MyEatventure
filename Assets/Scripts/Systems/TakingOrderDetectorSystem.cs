@@ -10,8 +10,11 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
     private readonly Contexts _contexts;
     private IGroup<GameEntity> _customersGroup;
     private IGroup<GameEntity> _restaurantGroup;
+    private IGroup<GameEntity> _kitchenGroup;
     private CompositeDisposable _compositeDisposable = new();
     private RestaurantTargetPositions _restaurantTargetPositions;
+
+    private readonly Queue<GameEntity> _chefEntityQueue = new Queue<GameEntity>();
 
     private const float COOLDOWN_TAKING_ORDER = 1f;
     private const float COOLDOWN_FIRST_DELIVERY = 0.1f;
@@ -21,6 +24,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
         _contexts = contexts;
         _customersGroup = _contexts.game.GetGroup(GameMatcher.Customer);
         _restaurantGroup = _contexts.game.GetGroup(GameMatcher.Restaurant);
+        _kitchenGroup = _contexts.game.GetGroup(GameMatcher.Kitchen);
     }
 
     ~TakingOrderDetectorSystem()
@@ -42,7 +46,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
     protected override bool Filter(GameEntity entity) => !entity.hasTargetPosition && entity.isChef;
 
     protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.AllOf(GameMatcher.TargetPosition).AnyOf(GameMatcher.Chef).Removed());
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Chef, GameMatcher.TargetPosition).Removed());
 
     private void SubscribeToEvents()
     {
@@ -105,7 +109,7 @@ public sealed class TakingOrderDetectorSystem : ReactiveSystem<GameEntity>, IIni
     }
 
     private Vector3 GetFirstKitchenSpotPosition() =>
-        _restaurantTargetPositions.GetFirstKitchenSpot().position;
+        _kitchenGroup.GetEntities().First().visual.gameObject.transform.position;
 
     private static void UpdateTakingOrderComponents(GameEntity customerEntity)
     {

@@ -6,10 +6,6 @@ public class RestaurantTargetPositions : MonoBehaviour
     [SerializeField] private Transform[] frontDeskSpots;
     [SerializeField] private Transform[] kitchenSpots;
 
-    public Transform GetFirstCustomerSpot() => behindDeskSpots[0];
-
-    public Transform GetFirstKitchenSpot() => kitchenSpots[0];
-
     public Transform[] GetKitchenSpots() => kitchenSpots;
 
     public Transform[] GetFrontDeskSpots() => frontDeskSpots;

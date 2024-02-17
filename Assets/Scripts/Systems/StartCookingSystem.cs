@@ -10,6 +10,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
     private readonly Contexts _contexts;
     private readonly IGroup<GameEntity> _customerGroup;
     private readonly IGroup<GameEntity> _restaurantGroup;
+    private readonly IGroup<GameEntity> _kitchenGroup;
     private CompositeDisposable _compositeDisposable = new();
 
     private const float COOLDOWN_DURATION = 2f;
@@ -19,6 +20,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         _contexts = contexts;
         _customerGroup = _contexts.game.GetGroup(GameMatcher.Customer);
         _restaurantGroup = _contexts.game.GetGroup(GameMatcher.Restaurant);
+        _kitchenGroup = _contexts.game.GetGroup(GameMatcher.Kitchen);
     }
 
     ~StartCookingSystem()
@@ -49,7 +51,7 @@ internal class StartCookingSystem : ReactiveSystem<GameEntity>
         Vector3.Distance(entity.position.value, targetPosition) <= Mathf.Epsilon;
 
     private Vector3 GetFirstKitchenPosition() =>
-        GetRestaurantTargetPosition().GetFirstKitchenSpot().position;
+        _kitchenGroup.GetEntities().First().visual.gameObject.transform.position;
 
     private void StartCooking(GameEntity chefEntity)
     {

@@ -16,6 +16,7 @@ public class RootSystems : Feature
         Add(new RepositorySystem(contexts, drinkCoinLevelsPrice, restaurantLevelsCost, dummyUI));
         Add(new CreateRestaurantSystem(contexts, restaurantLevelsCost));
         Add(new FrontDeskSystem(contexts));
+        Add(new KitchenSystem(contexts));
         Add(new CreateChefSystem(contexts, chefPrefab));
         Add(new CreateCustomerSystem(contexts, customersPrefab, customersParent, customerSpawnPoint));
         Add(new MovingChefSystem(contexts));

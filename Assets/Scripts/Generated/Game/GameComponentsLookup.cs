@@ -19,19 +19,20 @@ public static class GameComponentsLookup {
     public const int Delivered = 8;
     public const int FrontDeskSpot = 9;
     public const int Index = 10;
-    public const int Occupied = 11;
-    public const int Position = 12;
-    public const int PreparingOrder = 13;
-    public const int Quantity = 14;
-    public const int Restaurant = 15;
-    public const int ShowCanvas = 16;
-    public const int TargetDeskIndex = 17;
-    public const int TargetDeskPosition = 18;
-    public const int TargetPosition = 19;
-    public const int Visual = 20;
-    public const int Waiting = 21;
+    public const int Kitchen = 11;
+    public const int Occupied = 12;
+    public const int Position = 13;
+    public const int PreparingOrder = 14;
+    public const int Quantity = 15;
+    public const int Restaurant = 16;
+    public const int ShowCanvas = 17;
+    public const int TargetDeskIndex = 18;
+    public const int TargetDeskPosition = 19;
+    public const int TargetPosition = 20;
+    public const int Visual = 21;
+    public const int Waiting = 22;
 
-    public const int TotalComponents = 22;
+    public const int TotalComponents = 23;
 
     public static readonly string[] componentNames = {
         "BuysKitchen",
@@ -45,6 +46,7 @@ public static class GameComponentsLookup {
         "Delivered",
         "FrontDeskSpot",
         "Index",
+        "Kitchen",
         "Occupied",
         "Position",
         "PreparingOrder",
@@ -70,6 +72,7 @@ public static class GameComponentsLookup {
         typeof(DeliveredComponent),
         typeof(FrontDeskSpotComponent),
         typeof(IndexComponent),
+        typeof(KitchenComponent),
         typeof(OccupiedComponent),
         typeof(PositionComponent),
         typeof(PreparingOrder),

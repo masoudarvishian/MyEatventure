@@ -150,7 +150,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1926520536677276100}
   m_Layer: 0
-  m_Name: Spot 0
+  m_Name: Kitchen Spot 0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

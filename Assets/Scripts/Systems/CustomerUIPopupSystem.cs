@@ -1,6 +1,8 @@
 ﻿using Entitas;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
+using UnityEngine;
 
 public sealed class CustomerUIPopupSystem : ReactiveSystem<GameEntity>
 {
@@ -14,23 +16,45 @@ public sealed class CustomerUIPopupSystem : ReactiveSystem<GameEntity>
         HideCuctomerPopupFor(entities.Where(x => !x.isShowCanvas));
     }
 
+    protected override bool Filter(GameEntity entity) => entity.isCustomer;
+
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.ShowCanvas).AddedOrRemoved());
+
     private static void DisplayCustomerPopopFor(IEnumerable<GameEntity> entities)
     {
         foreach (var entity in entities)
         {
-            entity.visual.gameObject.transform.GetChild(0).gameObject.SetActive(true);
-            entity.visual.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = entity.quantity.value.ToString();
+            DisplayCanvasFor(entity);
+            UpdateEntityText(entity);
         }
     }
 
     private static void HideCuctomerPopupFor(IEnumerable<GameEntity> entities)
     {
         foreach (var entity in entities)
-            entity.visual.gameObject.transform.GetChild(0).gameObject.SetActive(false);
+            HideCanvasFor(entity);
     }
 
-    protected override bool Filter(GameEntity entity) => entity.isCustomer;
+    private static void DisplayCanvasFor(GameEntity entity)
+    {
+        GetEntityCanvasObj(entity).SetActive(true);
+    }
 
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
-        context.CreateCollector(GameMatcher.AllOf(GameMatcher.ShowCanvas).AddedOrRemoved());
+    private static void HideCanvasFor(GameEntity entity)
+    {
+        GetEntityCanvasObj(entity).SetActive(false);
+    }
+
+    private static void UpdateEntityText(GameEntity entity)
+    {
+        GetEntityTextObj(entity).text = entity.quantity.value.ToString();
+    }
+
+
+    private static GameObject GetEntityCanvasObj(GameEntity entity) =>
+        entity.visual.gameObject.transform.GetChild(0).gameObject;
+
+    private static TMP_Text GetEntityTextObj(GameEntity entity) =>
+        entity.visual.gameObject.GetComponentInChildren<TMP_Text>();
 }

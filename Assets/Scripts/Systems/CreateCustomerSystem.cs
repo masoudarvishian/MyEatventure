@@ -89,15 +89,9 @@ public sealed class CreateCustomerSystem : IInitializeSystem
 
         GameObject customerObj = InstantiateCustomerPrefab();
         GameEntity customerEntity = CreateCustomerEntity(customerObj);
-
-        var emptyFrontDeskEntity = _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
-        var behindDeskTargetPos = GetRestaurantTargetPosition().GetBehindDeskSpots().ElementAt(emptyFrontDeskEntity.index.value).position;
-
-        customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
-        customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
-        customerEntity.AddTargetDeskIndex(emptyFrontDeskEntity.index.value);
-        emptyFrontDeskEntity.isOccupied = true;
-
+        var emptyFrontDeskEntity = GetFirstFreeFrontDesk();
+        var behindDeskTargetPos = GetBehindDeskPositionAtIndex(emptyFrontDeskEntity.index.value);
+        AddRelatedComponentsToEntity(customerEntity, emptyFrontDeskEntity, behindDeskTargetPos);
         customerObj.Link(customerEntity);
     }
 
@@ -105,9 +99,7 @@ public sealed class CreateCustomerSystem : IInitializeSystem
     {
         var restaurantTargetPositions = GetRestaurantTargetPosition();
         var occupiedDeskCount = _frontDeskGroup.GetEntities().Where(x => x.isOccupied).Count();
-        if (occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count())
-            return true;
-        return false;
+        return occupiedDeskCount >= restaurantTargetPositions.GetFrontDeskSpots().Count();
     }
 
     private GameObject InstantiateCustomerPrefab()
@@ -128,6 +120,19 @@ public sealed class CreateCustomerSystem : IInitializeSystem
         entity.AddQuantity(UnityEngine.Random.Range(1, 3));
         entity.AddVisual(customerObj);
         return entity;
+    }
+
+    private GameEntity GetFirstFreeFrontDesk() => _frontDeskGroup.GetEntities().First(x => !x.isOccupied);
+
+    private Vector3 GetBehindDeskPositionAtIndex(int index) =>
+        GetRestaurantTargetPosition().GetBehindDeskSpots().ElementAt(index).position;
+
+    private static void AddRelatedComponentsToEntity(GameEntity customerEntity, GameEntity emptyFrontDeskEntity, Vector3 behindDeskTargetPos)
+    {
+        customerEntity.AddTargetDeskPosition(behindDeskTargetPos);
+        customerEntity.AddTargetPosition(emptyFrontDeskEntity.position.value);
+        customerEntity.AddTargetDeskIndex(emptyFrontDeskEntity.index.value);
+        emptyFrontDeskEntity.isOccupied = true;
     }
 
     private RestaurantTargetPositions GetRestaurantTargetPosition() =>

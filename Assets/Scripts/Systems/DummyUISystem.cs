@@ -15,6 +15,8 @@ public sealed class DummyUISystem : IInitializeSystem
     private readonly DummyUI _dummyUI;
     private readonly DrinkCoinLevelsPriceSO _drinkCoinLevelsPrice;
     private readonly RestaurantLevelsCostSO _restaurantLevelsCost;
+    private readonly IGroup<GameEntity> _chefGroup;
+    private readonly IGroup<GameEntity> _restaurantGroup;
     private CompositeDisposable _compositeDisposable = new();
 
     private static ISubject<Unit> _onClickDrinkUpgrade = new Subject<Unit>();
@@ -32,6 +34,8 @@ public sealed class DummyUISystem : IInitializeSystem
         _dummyUI = dummyUI;
         _drinkCoinLevelsPrice = drinkCoinLevelsPrice;
         _restaurantLevelsCost = restaurantLevelsCost;
+        _chefGroup = _contexts.game.GetGroup(GameMatcher.Chef);
+        _restaurantGroup = _contexts.game.GetGroup(GameMatcher.Restaurant);
     }
 
     ~DummyUISystem()
@@ -138,8 +142,7 @@ public sealed class DummyUISystem : IInitializeSystem
     private void OnAddChef()
     {
         var frontDeskSpotsCount = GetRestaurantTargetPosition().GetFrontDeskSpots().Count();
-        var chefCount = _contexts.game.GetGroup(GameMatcher.Chef).GetEntities().Count();
-
+        var chefCount = _chefGroup.GetEntities().Count();
         if (chefCount < frontDeskSpotsCount)
             _onClickAddChef?.OnNext(Unit.Default);
         else
@@ -162,5 +165,5 @@ public sealed class DummyUISystem : IInitializeSystem
     }
 
     private RestaurantTargetPositions GetRestaurantTargetPosition() =>
-        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
+        _restaurantGroup.GetEntities().First().visual.gameObject.GetComponent<RestaurantTargetPositions>();
 }

@@ -34,8 +34,7 @@ public sealed class CreateRestaurantSystem : IInitializeSystem
 
     private void CreateAndLinkRestaurantEntity()
     {
-        var restaurantObj = GameObject.Instantiate(_restaurantLevelsCost.restaurantLevels[RepositorySystem.CurrentRestaurantLevel].prefab);
-        restaurantObj.transform.position = Vector3.zero;
+        var restaurantObj = GameObject.Instantiate(GetCurrentRestaurantLevelPrefab());
         var e = _contexts.game.CreateEntity();
         e.isRestaurant = true;
         e.AddVisual(restaurantObj);
@@ -44,17 +43,25 @@ public sealed class CreateRestaurantSystem : IInitializeSystem
 
     private  void OnClickRestaurantUpgrade()
     {
-        var prevRestaurantObj = GameObject.FindAnyObjectByType<RestaurantTargetPositions>().gameObject;
+        var prevRestaurantObj = GetRestaurantGameObject();
         prevRestaurantObj.Unlink();
-        
-        var restaurantObj = GameObject.Instantiate(_restaurantLevelsCost.restaurantLevels[RepositorySystem.CurrentRestaurantLevel].prefab);
-        restaurantObj.transform.position = Vector3.zero;
-
-        var restaurantEntity = _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First();
-        restaurantEntity.visual.gameObject = restaurantObj;
-
-        restaurantObj.Link(restaurantEntity);
-
-       GameObject.Destroy(prevRestaurantObj);
+        InstantiateRestaurantAndLinkItTo(GetRestaurantEntity());
+        GameObject.Destroy(prevRestaurantObj);
     }
+
+    private static GameObject GetRestaurantGameObject() =>
+        GameObject.FindAnyObjectByType<RestaurantTargetPositions>().gameObject;
+
+    private void InstantiateRestaurantAndLinkItTo(GameEntity restaurantEntity)
+    {
+        var newRestaurantObj = GameObject.Instantiate(GetCurrentRestaurantLevelPrefab());
+        restaurantEntity.visual.gameObject = newRestaurantObj;
+        newRestaurantObj.Link(restaurantEntity);
+    }
+
+    private GameObject GetCurrentRestaurantLevelPrefab() =>
+        _restaurantLevelsCost.restaurantLevels[RepositorySystem.CurrentRestaurantLevel].prefab;
+
+    private GameEntity GetRestaurantEntity() =>
+        _contexts.game.GetGroup(GameMatcher.Restaurant).GetEntities().First();
 }

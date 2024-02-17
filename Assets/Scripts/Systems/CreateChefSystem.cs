@@ -22,14 +22,13 @@ public sealed class CreateChefSystem : IInitializeSystem
 
     public void Initialize()
     {
-        DummyUISystem.OnClickAddChef.Subscribe(_ => OnClickAddChef()).AddTo(_compositeDisposable);
-
+        SubscribeToEvents();
         InstantiateAndLinkChef();
     }
 
-    private void OnClickAddChef()
+    private void SubscribeToEvents()
     {
-        InstantiateAndLinkChef();
+        DummyUISystem.OnClickAddChef.Subscribe(_ => InstantiateAndLinkChef()).AddTo(_compositeDisposable);
     }
 
     private void InstantiateAndLinkChef()

@@ -71,6 +71,24 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
         }
     }
 
+    private void HandleDeliveringFirstOrder(GameEntity chefEntity, IEnumerable<GameEntity> freeKitchens)
+    {
+        if (freeKitchens.Count() == 0)
+            AddChefToQueue(chefEntity);
+        else
+        {
+            var freeKitchen = freeKitchens.First();
+            var targetKitchenPos = freeKitchen.visual.gameObject.transform.position;
+            var kitchenIndex = freeKitchen.index.value;
+            freeKitchen.isBuysKitchen = true;
+            EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
+                .Subscribe(_ =>
+                {
+                    GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
+                }).AddTo(_compositeDisposable);
+        }
+    }
+
     private void HandleTakingTheOrder(GameEntity chefEntity, GameEntity customerEntity, IEnumerable<GameEntity> freeKitchens)
     {
         if (freeKitchens.Count() == 0)
@@ -86,24 +104,6 @@ public sealed class TakingOrderSystem : ReactiveSystem<GameEntity>, IInitializeS
                 {
                     GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
                     UpdateTakingOrderComponents(customerEntity);
-                }).AddTo(_compositeDisposable);
-        }
-    }
-
-    private void HandleDeliveringFirstOrder(GameEntity chefEntity, IEnumerable<GameEntity> freeKitchens)
-    {
-        if (freeKitchens.Count() <= 0)
-            AddChefToQueue(chefEntity);
-        else
-        {
-            var freeKitchen = freeKitchens.First();
-            var targetKitchenPos = freeKitchen.visual.gameObject.transform.position;
-            var kitchenIndex = freeKitchen.index.value;
-            freeKitchen.isBuysKitchen = true;
-            EntityCooldown(chefEntity, COOLDOWN_FIRST_DELIVERY)
-                .Subscribe(_ =>
-                {
-                    GoToKitchen(chefEntity, targetKitchenPos, kitchenIndex);
                 }).AddTo(_compositeDisposable);
         }
     }

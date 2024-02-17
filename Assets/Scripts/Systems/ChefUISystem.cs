@@ -1,10 +1,11 @@
-﻿using Entitas;
+﻿using DG.Tweening;
+using Entitas;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
-using UniRx;
-using System;
+
 
 public sealed class ChefUISystem : ReactiveSystem<GameEntity>
 {
@@ -14,35 +15,46 @@ public sealed class ChefUISystem : ReactiveSystem<GameEntity>
 
     protected override void Execute(List<GameEntity> entities)
     {
-        foreach (var entity in entities.Where(x => x.hasCooldown))
+        ShowCooldownUIFor(entities.Where(x => x.hasCooldown));
+        HideCooldownUIFor(entities.Where(x => !x.hasCooldown));
+    }
+
+    protected override bool Filter(GameEntity entity) => entity.isChef;
+
+    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context) =>
+        context.CreateCollector(GameMatcher.AllOf(GameMatcher.Chef, GameMatcher.Cooldown).AddedOrRemoved());
+
+    private static void ShowCooldownUIFor(IEnumerable<GameEntity> entities)
+    {
+        foreach (var entity in entities)
         {
             DisplayCanvas(entity);
+            FillTheScrollbar(entity);
         }
-
-        foreach (var entity in entities.Where(x => !x.hasCooldown))
-        {
-            HideCanvas(entity);
-        }
-    }
-
-    protected override bool Filter(GameEntity entity)
-    {
-        return entity.isChef;
-    }
-
-    protected override ICollector<GameEntity> GetTrigger(IContext<GameEntity> context)
-    {
-        return context.CreateCollector(GameMatcher.AllOf(GameMatcher.Chef, GameMatcher.Cooldown).AddedOrRemoved());
-    }
-
-    private static void HideCanvas(GameEntity entity)
-    {
-        GetUICanvas(entity).SetActive(false);
     }
 
     private static void DisplayCanvas(GameEntity entity)
     {
         GetUICanvas(entity).SetActive(true);
+    }
+
+    private static Scrollbar GetScrollbarOf(GameEntity entity) =>
+       GetUICanvas(entity).GetComponentInChildren<Scrollbar>();
+
+    private static void FillTheScrollbar(GameEntity entity)
+    {
+        DOTween.To(() => 0f, x => GetScrollbarOf(entity).size = x, 1f, entity.cooldown.duration);
+    }
+
+    private static void HideCooldownUIFor(IEnumerable<GameEntity> entities)
+    {
+        foreach (var entity in entities)
+            HideCanvas(entity);
+    }
+
+    private static void HideCanvas(GameEntity entity)
+    {
+        GetUICanvas(entity).SetActive(false);
     }
 
     private static GameObject GetUICanvas(GameEntity entity) =>
